@@ -140,12 +140,12 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/features/board/components/TaskCard.test.jsx`
 **Dependencies**: T003, T006
 ✓ When:
-- [ ] Tests written first (RED)
-- [ ] Card layout with Tailwind
-- [ ] Checkbox implementation
-- [ ] Delete button
-- [ ] Double-click handler
-- [ ] Tests passing (GREEN)
+- [x] Tests written first (RED)
+- [x] Card layout with Tailwind
+- [x] Checkbox implementation
+- [x] Delete button
+- [x] Double-click handler
+- [x] Tests passing (GREEN)
 
 ### T011: Implement Task Modal [P]
 **Files**:
