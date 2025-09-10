@@ -153,12 +153,12 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/features/board/components/TaskModal.test.jsx`
 **Dependencies**: T003, T006
 ✓ When:
-- [ ] Tests written first (RED)
-- [ ] Modal with form fields
-- [ ] Markdown editor
-- [ ] Preview with sanitization
-- [ ] Save/cancel handlers
-- [ ] Tests passing (GREEN)
+- [x] Tests written first (RED)
+- [x] Modal with form fields
+- [x] Markdown editor
+- [x] Preview with sanitization
+- [x] Save/cancel handlers
+- [x] Tests passing (GREEN)
 
 ## Phase 5: Drag and Drop Integration
 
