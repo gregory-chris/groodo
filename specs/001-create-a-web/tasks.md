@@ -209,10 +209,10 @@ npm i -D tailwindcss postcss autoprefixer \
 **Files**: `src/features/board/hooks/useWeekNavigation.js`
 **Dependencies**: T005, T008
 ✓ When:
-- [ ] Week calculations correct
-- [ ] Navigation working
-- [ ] Today detection accurate
-- [ ] Timezone handling verified
+- [x] Week calculations correct
+- [x] Navigation working
+- [x] Today detection accurate
+- [x] Timezone handling verified
 
 ## Phase 7: Polish & Deploy
 
