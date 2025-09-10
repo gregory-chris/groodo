@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBoardContext } from '../context/BoardContext';
 import { formatWeekRange, getCurrentWeek } from '../../../lib/date.js';
 
@@ -19,6 +20,8 @@ function WeekNav() {
   
   // Check if we're viewing the current week
   const isCurrentWeek = state.currentWeek && actualCurrentWeek && 
+    state.currentWeek.start && state.currentWeek.start.getTime && 
+    actualCurrentWeek.start && actualCurrentWeek.start.getTime &&
     state.currentWeek.start.getTime() === actualCurrentWeek.start.getTime();
 
   // Format the week range for display
@@ -27,9 +30,12 @@ function WeekNav() {
       if (!state.currentWeek) {
         return 'Current Week';
       }
+      // If we're on the current week, show "Current Week"
+      if (isCurrentWeek) {
+        return 'Current Week';
+      }
       return formatWeekRange(state.currentWeek);
     } catch (error) {
-      console.warn('Error formatting week range:', error);
       return 'Current Week';
     }
   };
@@ -37,20 +43,20 @@ function WeekNav() {
   return (
     <div 
       data-testid="week-nav"
-      className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-6"
+      className="week-nav-content"
     >
       {/* Week Range Display */}
-      <div className="flex items-center mb-4 sm:mb-0">
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 
           data-testid="week-range"
-          className="text-lg font-semibold text-gray-900"
+          className="week-range"
         >
           {getWeekRangeDisplay()}
         </h2>
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center space-x-2">
+      <div className="nav-buttons">
         {/* Previous Week Button */}
         <button
           data-testid="prev-week-btn"
@@ -58,20 +64,7 @@ function WeekNav() {
           aria-label="Previous week"
           className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
-          <svg 
-            className="w-5 h-5 text-gray-600" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M15 19l-7-7 7-7" 
-            />
-          </svg>
+          <ChevronLeft size={20} />
         </button>
 
         {/* Today Button */}
@@ -79,13 +72,7 @@ function WeekNav() {
           data-testid="today-btn"
           onClick={goToCurrentWeek}
           aria-label="Go to current week"
-          className={`
-            px-4 py-2 rounded-lg font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-            ${isCurrentWeek 
-              ? 'bg-blue-100 text-blue-700 border border-blue-200' 
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }
-          `}
+          className="today-button"
         >
           Today
         </button>
@@ -97,20 +84,7 @@ function WeekNav() {
           aria-label="Next week"
           className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
-          <svg 
-            className="w-5 h-5 text-gray-600" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M9 5l7 7-7 7" 
-            />
-          </svg>
+          <ChevronRight size={20} />
         </button>
       </div>
     </div>

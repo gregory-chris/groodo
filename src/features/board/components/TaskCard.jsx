@@ -1,31 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Trash2, GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useAccessibility, useKeyboardNavigation } from './AccessibilityProvider';
 
 /**
  * TaskCard component for displaying individual tasks
- * Features checkbox, delete button, drag handle, double-click editing, and completion styling
+ * Features improved design with hover icons and delete confirmation
  */
 function TaskCard({ 
   task, 
   onToggleComplete, 
   onDelete, 
-  onDoubleClick, 
+  onEdit,
   className = '' 
 }) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   // Handle missing task prop
   if (!task) {
     return null;
   }
 
   const { id, title, completed } = task;
-  
-  // Accessibility hooks
-  const { announceStatus } = useAccessibility();
-  const { handleKeyDown } = useKeyboardNavigation();
 
   // useSortable hook for drag and drop functionality
   const {
@@ -37,113 +34,156 @@ function TaskCard({
     isDragging,
   } = useSortable({ id });
 
-  // Event handlers
-  const handleCheckboxChange = (e) => {
-    e.stopPropagation();
-    onToggleComplete?.(id);
-  };
-
-  const handleDeleteClick = (e) => {
-    e.stopPropagation();
-    onDelete?.(id);
-  };
-
-  const handleDoubleClick = (e) => {
-    e.stopPropagation();
-    onDoubleClick?.(id);
-  };
-
-  // Dynamic styling
-  const titleClasses = `
-    flex-1 text-sm font-medium select-none
-    ${completed 
-      ? 'text-gray-500 line-through' 
-      : 'text-gray-900'
-    }
-  `.trim();
-
-  // Style applied for drag transform and transition
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
-  const cardClasses = `
-    flex items-center p-3 space-x-3 rounded-lg border transition-shadow
-    hover:shadow-sm cursor-pointer
-    ${completed 
-      ? 'bg-gray-50 border-gray-300' 
-      : 'bg-white border-gray-200'
+  // Handle task completion toggle
+  const handleToggleComplete = (e) => {
+    e.stopPropagation();
+    if (onToggleComplete) {
+      onToggleComplete(id);
     }
-    ${isDragging ? 'opacity-50' : ''}
-    ${className}
-  `.trim();
+  };
+
+  // Handle delete with confirmation
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = (e) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(id);
+    }
+    setShowDeleteConfirm(false);
+  };
+
+  const handleCancelDelete = (e) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(false);
+  };
+
+  // Handle task editing
+  const handleTaskClick = (e) => {
+    // Only trigger edit if clicking on the text area, not other interactive elements
+    if (e.target.classList.contains('task-title') || e.target.closest('.task-content')) {
+      if (onEdit) {
+        onEdit(task);
+      }
+    }
+  };
+
+  // Handle keyboard interactions
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (e.key === ' ') {
+        handleToggleComplete(e);
+      } else {
+        handleTaskClick(e);
+      }
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      e.preventDefault();
+      handleDeleteClick(e);
+    }
+  };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      data-testid="task-card"
-      className={cardClasses}
-      onDoubleClick={handleDoubleClick}
-      role="listitem"
-      aria-label={`Task: ${title}, ${completed ? 'completed' : 'incomplete'}`}
-      {...attributes}
-    >
-      {/* Drag Handle */}
+    <>
       <div
-        data-testid="task-drag-handle"
-        className={`
-          flex items-center justify-center w-6 h-6 cursor-grab active:cursor-grabbing
-          ${completed ? 'text-gray-400' : 'text-gray-500'}
-          hover:text-gray-600 transition-colors
-        `}
-        aria-label="Drag to reorder task"
-        {...listeners}
+        ref={setNodeRef}
+        style={style}
+        className={`task-card ${completed ? 'task-completed' : ''} ${className}`.trim()}
+        onClick={handleTaskClick}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={`Task: ${title}. ${completed ? 'Completed' : 'Not completed'}. Press Enter to edit, Space to toggle completion, Delete to remove.`}
+        data-testid="task-card"
+        {...attributes}
       >
-        <GripVertical className="w-4 h-4" aria-hidden="true" />
+        {/* Drag Handle */}
+        <div
+          className="task-drag-handle"
+          {...listeners}
+          role="button"
+          tabIndex={-1}
+          aria-label="Drag to reorder task"
+          data-testid="drag-handle"
+        >
+          <GripVertical size={12} />
+        </div>
+
+        {/* Task Content */}
+        <div className="task-content">
+          {/* Checkbox */}
+          <input
+            type="checkbox"
+            checked={completed}
+            onChange={handleToggleComplete}
+            className="task-checkbox"
+            aria-label={`Mark task "${title}" as ${completed ? 'incomplete' : 'complete'}`}
+            data-testid="task-checkbox"
+          />
+
+          {/* Task Title */}
+          <div
+            className="task-title"
+            data-testid="task-title"
+          >
+            {title}
+          </div>
+        </div>
+
+        {/* Delete Button */}
+        <button
+          className="task-delete"
+          onClick={handleDeleteClick}
+          aria-label={`Delete task "${title}"`}
+          data-testid="task-delete"
+        >
+          <Trash2 size={12} />
+        </button>
       </div>
 
-      {/* Checkbox */}
-      <input
-        type="checkbox"
-        checked={completed}
-        onChange={handleCheckboxChange}
-        data-testid="task-checkbox"
-        className="
-          w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded 
-          focus:ring-blue-500 focus:ring-2 focus:ring-offset-0
-          hover:bg-gray-200 transition-colors cursor-pointer
-        "
-        aria-label="Mark task as complete"
-        tabIndex={0}
-      />
-
-      {/* Task Title */}
-      <span 
-        className={titleClasses} 
-        data-testid="task-title"
-        title={title}
-      >
-        {title}
-      </span>
-
-      {/* Delete Button */}
-      <button
-        data-testid="task-delete-btn"
-        onClick={handleDeleteClick}
-        className="
-          flex items-center justify-center w-6 h-6 text-gray-400 
-          hover:text-red-500 focus:text-red-500 transition-colors
-          focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded
-          hover:bg-red-50 focus:bg-red-50
-        "
-        aria-label="Delete task"
-        tabIndex={0}
-      >
-        <Trash2 className="w-4 h-4" aria-hidden="true" />
-      </button>
-    </div>
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={handleCancelDelete}
+        >
+          <div 
+            className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Delete Task
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete "{title}"? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleCancelDelete}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -152,11 +192,10 @@ TaskCard.propTypes = {
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     completed: PropTypes.bool,
-    description: PropTypes.string,
   }).isRequired,
   onToggleComplete: PropTypes.func,
   onDelete: PropTypes.func,
-  onDoubleClick: PropTypes.func,
+  onEdit: PropTypes.func,
   className: PropTypes.string,
 };
 

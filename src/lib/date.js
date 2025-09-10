@@ -111,13 +111,30 @@ export function getPreviousWeek(currentWeek) {
  * @returns {Date[]} Array of 5 dates from Sunday to Thursday
  */
 export function getWeekDates(startDate) {
+  if (!startDate) {
+    console.error('Invalid startDate provided to getWeekDates:', startDate);
+    return [];
+  }
+  
   const dates = [];
   const current = new Date(startDate);
+  
+  // Validate the date
+  if (isNaN(current.getTime())) {
+    console.error('Invalid date provided to getWeekDates:', startDate);
+    return [];
+  }
+  
   current.setHours(0, 0, 0, 0);
   
   // Generate 5 dates: Sunday (0) through Thursday (4)
   for (let i = 0; i < 5; i++) {
-    dates.push(new Date(current));
+    const newDate = new Date(current);
+    if (isNaN(newDate.getTime())) {
+      console.error('Generated invalid date at index', i);
+      break;
+    }
+    dates.push(newDate);
     current.setDate(current.getDate() + 1);
   }
   
@@ -204,4 +221,13 @@ export function getDayName(date) {
 export function getShortDayName(date) {
   const options = { weekday: 'short' };
   return date.toLocaleDateString('en-US', options);
+}
+
+/**
+ * Get a unique date key for storing tasks
+ * @param {Date} date - The date
+ * @returns {string} Date key in YYYY-MM-DD format
+ */
+export function getDateKey(date) {
+  return date.toISOString().split('T')[0];
 }

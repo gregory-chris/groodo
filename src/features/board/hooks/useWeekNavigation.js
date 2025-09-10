@@ -24,7 +24,11 @@ function useWeekNavigation() {
   // Calculate week dates whenever currentWeek changes
   const weekDates = useMemo(() => {
     try {
-      return getWeekDates(currentWeek);
+      if (!currentWeek || !currentWeek.start) {
+        console.error('Invalid currentWeek:', currentWeek);
+        return [];
+      }
+      return getWeekDates(currentWeek.start);
     } catch (error) {
       console.error('Error calculating week dates:', error);
       return [];
@@ -119,4 +123,5 @@ function useWeekNavigation() {
   };
 }
 
+export { useWeekNavigation };
 export default useWeekNavigation;

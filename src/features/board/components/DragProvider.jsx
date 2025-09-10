@@ -41,7 +41,6 @@ function DragProvider({
   const {
     state,
     moveTask,
-    reorderTasks,
   } = useBoardContext();
 
   // Handle drag start
@@ -105,17 +104,20 @@ function DragProvider({
         return;
       }
 
-      // Determine if we're dropping on a column or another task
-      const isDroppedOnColumn = overId.startsWith('column-');
+      // Check if we're dropping on a task
       const isDroppedOnTask = state.tasks?.some(task => task.id === overId);
-
-      if (isDroppedOnColumn) {
-        // Extract column date from overId (assuming format like 'column-2025-09-10')
-        const columnDate = overId.replace('column-', '');
+      
+      if (!isDroppedOnTask) {
+        // Dropped on a column (overId should be the column key directly)
+        const targetColumn = overId;
         
-        // Move task to different column
+        // Get existing tasks in target column to determine order
+        const tasksInColumn = state.tasks.filter(task => task.column === targetColumn);
+        const newOrder = tasksInColumn.length;
+        
+        // Move task to different column at the end
         if (moveTask) {
-          moveTask(activeId, columnDate);
+          moveTask(activeId, targetColumn, newOrder);
         }
       } else if (isDroppedOnTask) {
         // Find the target task to determine its position and column
@@ -128,22 +130,18 @@ function DragProvider({
           return;
         }
 
-        // If tasks are in same column, reorder them
-        if (activeTask.date === overTask.date) {
-          if (reorderTasks) {
-            // Get all tasks in the same column
-            const columnTasks = state.tasks.filter(task => task.date === activeTask.date);
-            const activeIndex = columnTasks.findIndex(task => task.id === activeId);
-            const overIndex = columnTasks.findIndex(task => task.id === overId);
-            
-            if (activeIndex !== -1 && overIndex !== -1) {
-              reorderTasks(activeTask.date, activeIndex, overIndex);
-            }
+        // Get the position where we want to insert
+        const overTaskOrder = overTask.order || 0;
+        
+        if (activeTask.column === overTask.column) {
+          // Same column - reorder within column
+          if (moveTask) {
+            moveTask(activeId, activeTask.column, overTaskOrder);
           }
         } else {
-          // Move task to different column at specific position
+          // Different column - move to new column at the position of the task we're hovering over
           if (moveTask) {
-            moveTask(activeId, overTask.date);
+            moveTask(activeId, overTask.column, overTaskOrder);
           }
         }
       }
@@ -155,7 +153,7 @@ function DragProvider({
     if (onDragEnd) {
       onDragEnd(event);
     }
-  }, [state.tasks, moveTask, reorderTasks, onDragEnd]);
+  }, [state.tasks, moveTask, onDragEnd]);
 
   // Get tasks for sortable context (grouped by date/column)
   const getTasksByDate = useCallback((date) => {

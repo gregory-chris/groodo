@@ -87,13 +87,34 @@ function boardReducer(state, action) {
 
     case ACTIONS.MOVE_TASK: {
       const { taskId, targetColumn, targetOrder } = action.payload;
+      
+      // First, get all tasks in the target column except the moving task
+      const otherTasksInColumn = state.tasks.filter(
+        task => task.column === targetColumn && task.id !== taskId
+      );
+      
+      // Sort them by current order
+      otherTasksInColumn.sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      // Insert the moving task at the specified position and reorder all tasks
+      const updatedTasks = state.tasks.map(task => {
+        if (task.id === taskId) {
+          // This is the task we're moving
+          return { ...task, column: targetColumn, order: targetOrder };
+        } else if (task.column === targetColumn) {
+          // Other tasks in the target column need their order updated
+          const currentIndex = otherTasksInColumn.findIndex(t => t.id === task.id);
+          if (currentIndex >= targetOrder) {
+            // Tasks after the insertion point get pushed down
+            return { ...task, order: currentIndex + 1 };
+          }
+        }
+        return task;
+      });
+      
       return {
         ...state,
-        tasks: state.tasks.map(task =>
-          task.id === taskId
-            ? { ...task, column: targetColumn, order: targetOrder }
-            : task
-        )
+        tasks: updatedTasks
       };
     }
 
@@ -237,6 +258,11 @@ export function BoardProvider({ children }) {
     goToNextWeek,
     goToPreviousWeek,
     goToCurrentWeek,
+    // Mock function for openTaskModal
+    openTaskModal: (mode, taskData) => {
+      // Simple implementation - just log for now
+      console.log('Modal would open:', mode, taskData);
+    },
     // Persistence functionality
     persistence: {
       isLoading: persistence.isLoading,
