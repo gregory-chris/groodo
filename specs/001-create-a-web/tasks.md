@@ -104,9 +104,9 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/components/Layout/Footer.jsx`
 **Dependencies**: T003
 ✓ When:
-- [ ] Layout structure implemented
-- [ ] Header/Footer styled with Tailwind
-- [ ] Responsive design working
+- [x] Layout structure implemented
+- [x] Header/Footer styled with Tailwind
+- [x] Responsive design working
 
 ### T008: Implement Week Navigation [P]
 **Files**:
