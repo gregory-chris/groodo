@@ -1,0 +1,10 @@
+--- 
+alwaysApply: true
+title: Spec-first implementation
+---
+When writing or editing code:
+- Treat the latest spec at `specs/**/spec*.md` as source of truth.
+- Follow the implementation steps in `specs/**/plan*.md`.
+- Implement tasks from `specs/**/tasks*.md`, one task per commit/PR.
+- If code and spec disagree, propose a patch to the spec before coding.
+- Summarize which tasks were completed in the PR description.
