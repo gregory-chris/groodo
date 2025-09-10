@@ -187,10 +187,10 @@ npm i -D tailwindcss postcss autoprefixer \
 **Files**: `src/features/board/components/Column.jsx`
 **Dependencies**: T009, T012
 ✓ When:
-- [ ] Drop zone configured
-- [ ] Visual feedback on drag
-- [ ] Order persistence
-- [ ] A11y announcements
+- [x] Drop zone configured
+- [x] Visual feedback on drag
+- [x] Order persistence
+- [x] A11y announcements
 
 ## Phase 6: Data Integration
 
