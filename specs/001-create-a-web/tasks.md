@@ -200,10 +200,10 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/features/board/hooks/usePersistence.js`
 **Dependencies**: T004, T006
 ✓ When:
-- [ ] Auto-save implemented
-- [ ] Load on startup
-- [ ] Error handling
-- [ ] Migration working
+- [x] Auto-save implemented
+- [x] Load on startup
+- [x] Error handling
+- [x] Migration working
 
 ### T016: Week Navigation Logic
 **Files**: `src/features/board/hooks/useWeekNavigation.js`
