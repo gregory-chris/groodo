@@ -153,31 +153,59 @@ function TaskCard({
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
           onClick={handleCancelDelete}
         >
           <div 
-            className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl"
+            className="bg-white rounded-lg p-4 max-w-xs mx-4 shadow-lg border border-gray-200"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              animation: 'fadeInScale 0.15s ease-out'
+            }}
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Delete Task
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Are you sure you want to delete "{title}"? This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
+            <div className="text-center mb-4">
+              <p className="text-gray-900 font-medium text-sm">
+                Delete?
+              </p>
+            </div>
+            <div className="flex gap-2">
               <button
                 onClick={handleCancelDelete}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                className="flex-1 h-9 bg-gray-100 border border-gray-200 rounded-md hover:bg-gray-200 transition-all duration-150 flex items-center justify-center"
+                title="Cancel"
               >
-                Cancel
+                <svg 
+                  className="w-4 h-4 text-gray-600" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M6 18L18 6M6 6l12 12" 
+                  />
+                </svg>
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="flex-1 h-9 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-150 flex items-center justify-center shadow-sm hover:shadow-md"
+                title="Delete"
               >
-                Delete
+                <svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M5 13l4 4L19 7" 
+                  />
+                </svg>
               </button>
             </div>
           </div>
