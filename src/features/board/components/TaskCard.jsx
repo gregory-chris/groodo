@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Trash2, GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useAccessibility, useKeyboardNavigation } from './AccessibilityProvider';
 
 /**
  * TaskCard component for displaying individual tasks
@@ -21,6 +22,10 @@ function TaskCard({
   }
 
   const { id, title, completed } = task;
+  
+  // Accessibility hooks
+  const { announceStatus } = useAccessibility();
+  const { handleKeyDown } = useKeyboardNavigation();
 
   // useSortable hook for drag and drop functionality
   const {

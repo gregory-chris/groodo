@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
+import { useFocusManagement } from './AccessibilityProvider';
 
 /**
  * TaskModal component for creating and editing tasks
@@ -32,24 +34,39 @@ function TaskModal({ isOpen, task, onSave, onCancel }) {
     }
   }, [task]);
 
-  // Focus title input when modal opens
+  // Focus title input when modal opens and setup focus trap
   useEffect(() => {
     let timeoutId;
-    if (isOpen && titleInputRef.current) {
-      timeoutId = setTimeout(() => {
-        if (titleInputRef.current) {
-          titleInputRef.current.focus();
-        }
-      }, 100);
+    let cleanupFocusTrap;
+    
+    if (isOpen) {
+      captureFocus();
+      
+      if (titleInputRef.current) {
+        timeoutId = setTimeout(() => {
+          if (titleInputRef.current) {
+            titleInputRef.current.focus();
+          }
+        }, 100);
+      }
+      
+      if (modalRef.current) {
+        cleanupFocusTrap = trapFocus(modalRef.current);
+      }
+    } else {
+      restoreFocus();
     }
     
-    // Cleanup timeout on unmount or when dependencies change
+    // Cleanup timeout and focus trap on unmount or when dependencies change
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
+      if (cleanupFocusTrap) {
+        cleanupFocusTrap();
+      }
     };
-  }, [isOpen]);
+  }, [isOpen, captureFocus, restoreFocus, trapFocus]);
 
   // Handle Escape key to close modal
   useEffect(() => {

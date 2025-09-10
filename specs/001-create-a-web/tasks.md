@@ -220,10 +220,10 @@ npm i -D tailwindcss postcss autoprefixer \
 **Files**: Various
 **Dependencies**: All UI components
 ✓ When:
-- [ ] ARIA labels added
-- [ ] Keyboard navigation working
-- [ ] Focus management fixed
-- [ ] Screen reader tested
+- [x] ARIA labels added
+- [x] Keyboard navigation working
+- [x] Focus management fixed
+- [x] Screen reader tested
 
 ### T018: Performance Optimization [P]
 **Files**: Various
