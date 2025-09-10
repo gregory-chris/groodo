@@ -77,11 +77,11 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/lib/date.test.js`
 **Dependencies**: T001
 ✓ When:
-- [ ] Tests written first (RED)
-- [ ] Week calculation for Sun-Thu
-- [ ] Today highlighting logic
-- [ ] Timezone handling
-- [ ] Tests passing (GREEN)
+- [x] Tests written first (RED)
+- [x] Week calculation for Sun-Thu
+- [x] Today highlighting logic
+- [x] Timezone handling
+- [x] Tests passing (GREEN)
 
 ### T006: Create Board Context [P]
 **Files**:
