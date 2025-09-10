@@ -168,11 +168,11 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/features/board/components/DragProvider.test.jsx`
 **Dependencies**: T006, T009, T010
 ✓ When:
-- [ ] Tests written first (RED)
-- [ ] DndContext configured
-- [ ] Sortable context added
-- [ ] Drop handlers implemented
-- [ ] Tests passing (GREEN)
+- [x] Tests written first (RED)
+- [x] DndContext configured
+- [x] Sortable context added
+- [x] Drop handlers implemented
+- [x] Tests passing (GREEN)
 
 ### T013: Add Drag to TaskCard
 **Files**: `src/features/board/components/TaskCard.jsx`
