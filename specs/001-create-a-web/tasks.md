@@ -52,10 +52,10 @@ npm i -D tailwindcss postcss autoprefixer \
 - `vite.config.js`
 **Dependencies**: T002
 ✓ When:
-- [ ] Tailwind configured with content paths
-- [ ] ESLint set up with React plugins
-- [ ] Prettier configured
-- [ ] Vitest configured in Vite
+- [x] Tailwind configured with content paths
+- [x] ESLint set up with React plugins
+- [x] Prettier configured
+- [x] Vitest configured in Vite
 
 ## Phase 2: Core Utils & Models
 
