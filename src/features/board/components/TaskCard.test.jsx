@@ -3,6 +3,33 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BoardProvider } from '../context/BoardContext';
 import TaskCard from './TaskCard';
 
+// Mock @dnd-kit/sortable
+vi.mock('@dnd-kit/sortable', () => {
+  const mockUseSortable = vi.fn(() => ({
+    attributes: { role: 'button', tabIndex: 0 },
+    listeners: { onPointerDown: vi.fn() },
+    setNodeRef: vi.fn(),
+    transform: null,
+    transition: null,
+    isDragging: false,
+  }));
+  
+  return {
+    useSortable: mockUseSortable,
+  };
+});
+
+// Mock @dnd-kit/utilities
+vi.mock('@dnd-kit/utilities', () => ({
+  CSS: {
+    Transform: {
+      toString: vi.fn((transform) => 
+        transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : ''
+      ),
+    },
+  },
+}));
+
 // Test wrapper with Board Context
 function TestWrapper({ children }) {
   return (
@@ -344,7 +371,7 @@ describe('TaskCard Component', () => {
       );
 
       const taskCard = screen.getByTestId('task-card');
-      expect(taskCard).toHaveAttribute('role', 'listitem');
+      expect(taskCard).toHaveAttribute('role', 'button'); // Updated for drag functionality
     });
 
     it('should be keyboard navigable', () => {
@@ -523,6 +550,171 @@ describe('TaskCard Component', () => {
       fireEvent.click(checkbox);
 
       expect(mockHandlers.onToggleComplete).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('Drag and Drop Functionality', () => {
+    it('should render drag handle', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      expect(screen.getByTestId('task-drag-handle')).toBeInTheDocument();
+    });
+
+    it('should have drag handle icon', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const dragHandle = screen.getByTestId('task-drag-handle');
+      const dragIcon = dragHandle.querySelector('svg');
+      
+      expect(dragIcon).toBeInTheDocument();
+    });
+
+    it('should apply sortable attributes to task card', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const taskCard = screen.getByTestId('task-card');
+      expect(taskCard).toHaveAttribute('role', 'button');
+      expect(taskCard).toHaveAttribute('tabIndex', '0');
+    });
+
+    it('should apply dragging styles when isDragging is true', async () => {
+      const { useSortable } = await vi.importMock('@dnd-kit/sortable');
+      useSortable.mockImplementation(() => ({
+        attributes: { role: 'button', tabIndex: 0 },
+        listeners: { onPointerDown: vi.fn() },
+        setNodeRef: vi.fn(),
+        transform: null,
+        transition: null,
+        isDragging: true,
+      }));
+
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const taskCard = screen.getByTestId('task-card');
+      expect(taskCard).toHaveClass('opacity-50'); // Dragging opacity
+    });
+
+    it('should apply transform styles when transform is provided', async () => {
+      const mockTransform = { x: 10, y: 20, scaleX: 1, scaleY: 1 };
+      
+      const { useSortable } = await vi.importMock('@dnd-kit/sortable');
+      useSortable.mockImplementation(() => ({
+        attributes: { role: 'button', tabIndex: 0 },
+        listeners: { onPointerDown: vi.fn() },
+        setNodeRef: vi.fn(),
+        transform: mockTransform,
+        transition: 'transform 200ms ease',
+        isDragging: false,
+      }));
+
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const taskCard = screen.getByTestId('task-card');
+      // Should have transform and transition styles applied
+      expect(taskCard).toHaveAttribute('style');
+    });
+
+    it('should have accessible drag handle', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const dragHandle = screen.getByTestId('task-drag-handle');
+      expect(dragHandle).toHaveAttribute('aria-label', 'Drag to reorder task');
+    });
+
+    it('should render different drag handle for completed tasks', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockCompletedTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const dragHandle = screen.getByTestId('task-drag-handle');
+      expect(dragHandle).toHaveClass('text-gray-400'); // Muted for completed tasks
+    });
+
+    it('should render normal drag handle for incomplete tasks', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const dragHandle = screen.getByTestId('task-drag-handle');
+      expect(dragHandle).toHaveClass('text-gray-500'); // Normal for incomplete tasks
+    });
+
+    it('should prevent drag interactions on non-interactive elements', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const checkbox = screen.getByTestId('task-checkbox');
+      const deleteBtn = screen.getByTestId('task-delete-btn');
+
+      // These elements should not have drag listeners
+      expect(checkbox).not.toHaveAttribute('data-drag-listener');
+      expect(deleteBtn).not.toHaveAttribute('data-drag-listener');
+    });
+
+    it('should handle drag animation smoothly', async () => {
+      const { useSortable } = await vi.importMock('@dnd-kit/sortable');
+      useSortable.mockImplementation(() => ({
+        attributes: { role: 'button', tabIndex: 0 },
+        listeners: { onPointerDown: vi.fn() },
+        setNodeRef: vi.fn(),
+        transform: { x: 0, y: 10, scaleX: 1, scaleY: 1 },
+        transition: 'transform 200ms ease-in-out',
+        isDragging: false,
+      }));
+
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const taskCard = screen.getByTestId('task-card');
+      const style = taskCard.getAttribute('style');
+      
+      expect(style).toContain('transform');
+      expect(style).toContain('transition');
+    });
+
+    it('should have proper touch target size for drag handle', () => {
+      render(
+        <TestWrapper>
+          <TaskCard task={mockTask} {...mockHandlers} />
+        </TestWrapper>
+      );
+
+      const dragHandle = screen.getByTestId('task-drag-handle');
+      expect(dragHandle).toHaveClass('w-6', 'h-6'); // Proper touch target
     });
   });
 });
