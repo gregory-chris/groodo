@@ -114,11 +114,11 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/features/board/components/WeekNav.test.jsx`
 **Dependencies**: T005, T006
 ✓ When:
-- [ ] Tests written first (RED)
-- [ ] Previous/Next week buttons
-- [ ] Today button
-- [ ] Week range display
-- [ ] Tests passing (GREEN)
+- [x] Tests written first (RED)
+- [x] Previous/Next week buttons
+- [x] Today button
+- [x] Week range display
+- [x] Tests passing (GREEN)
 
 ### T009: Create Column Component [P]
 **Files**:
