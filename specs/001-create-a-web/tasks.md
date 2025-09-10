@@ -40,8 +40,8 @@ npm i -D tailwindcss postcss autoprefixer \
          eslint-plugin-react-refresh prettier
 ```
 ✓ When:
-- [ ] All dependencies install successfully
-- [ ] package.json includes correct versions
+- [x] All dependencies install successfully
+- [x] package.json includes correct versions
 
 ### T003: Configure Development Tools [P]
 **Files**: 
