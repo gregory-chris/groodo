@@ -1,0 +1,180 @@
+---
+description: Groodo Weekly Task Management App - Development Rules
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Groodo Project Rules
+
+## Project Overview
+Groodo is a responsive weekly task management web application with a calendar-like interface for Sunday-Thursday work weeks. Built with React, Vite, and custom CSS.
+
+## Architecture & File Structure
+
+### Core Technologies
+- **Frontend:** React 18 with Vite
+- **Styling:** Tailwind with Custom CSS. Prefer tailwind over custom styles
+- **State Management:** React Context API with useReducer
+- **Testing:** Vitest + @testing-library/react
+- **Drag & Drop:** @dnd-kit libraries
+- **Icons:** lucide-react
+- **Markdown:** react-markdown with remark-gfm
+
+### File Organization
+```
+src/
+├── features/board/
+│   ├── components/     # React components
+│   ├── context/        # Context providers & state
+│   ├── hooks/          # Custom hooks
+│   └── utils/          # Feature utilities
+├── lib/                # Shared utilities (date.js)
+└── index.css          # Global styles
+```
+
+## Development Standards
+
+### Code Style
+- Use **functional components** with hooks
+- Prefer **custom hooks** for complex logic
+- Use **PropTypes** for component validation
+- Follow **React best practices** (useCallback, useMemo for optimization)
+- Write **comprehensive tests** for all features
+
+### State Management
+- Use **React Context** for global state
+- Implement **useReducer** for complex state logic
+- Store data in **localStorage** for persistence
+- Use **defensive programming** (null checks, type validation)
+
+### Styling Guidelines
+- Use tailwind css framework whenever possible
+- Prefer using icons instead of texts for buttons with obvious operations
+- Make the design and the overall UX convenient, easy, elegant and generally awesome
+- Use best practices for responsive layouts
+- Implement **mobile-first** responsive design
+- Follow **BEM-like** class naming conventions
+
+### Color Palette
+- Primary: `#701E2E` (dark red)
+- Secondary: `#CF904E` (gold/orange)
+- Accent: `#BB1E3A` (bright red)
+- Background: White with subtle grays
+
+### Responsive Breakpoints
+```css
+@media (max-width: 1024px) { /* 3 columns */ }
+@media (max-width: 768px)  { /* 2 columns */ }
+@media (max-width: 480px)  { /* 1 column */ }
+```
+
+## Component Guidelines
+
+### React Components
+- Keep components **focused and single-purpose**
+- Use **composition over inheritance**
+- Implement **proper error boundaries**
+- Include **accessibility** attributes (ARIA, roles)
+- Handle **loading and error states**
+
+### Testing Requirements
+- **Unit tests** for important hooks and utilities
+- **Integration tests** for component interactions
+- Follow **TDD approach** (Red-Green-Refactor)
+
+## Feature Development
+
+### Date & Time Handling
+- Work week: **Sunday through Thursday**
+- Use `src/lib/date.js` utilities for all date operations
+- Handle **timezone considerations**
+- Validate **date inputs** defensively
+
+### Drag & Drop Implementation
+- Use **@dnd-kit** libraries exclusively
+- Implement **proper accessibility** for drag operations
+- Handle **keyboard navigation** for drag & drop
+- Provide **visual feedback** during operations
+
+### Task Management
+- Tasks have: `id`, `title`, `content`, `column`, `order`, `completed`, `createdAt`
+- Use **optimistic updates** for better UX
+- Implement **undo/redo** functionality where appropriate
+- Handle **data validation** on all operations
+
+## Performance Standards
+
+### Optimization Requirements
+- Implement **code splitting** where beneficial
+- Use **React.memo** for expensive components
+- Optimize **re-renders** with useCallback/useMemo
+- Implement **virtualization** for large lists
+- Minimize **bundle size** and load times
+
+### Accessibility (A11Y)
+- Support **keyboard navigation**
+- Implement **screen reader** compatibility
+- Use **semantic HTML** elements
+- Provide **focus management**
+- Include **skip links** and landmarks
+
+## Code Quality
+
+### Error Handling
+- Implement **comprehensive error boundaries**
+- Use **try-catch** blocks for async operations
+- Provide **user-friendly error messages**
+- Log errors for debugging (development only)
+
+### Security Considerations
+- **Sanitize** all user inputs
+- **Validate** data on both client and storage
+- Use **DOMPurify** for markdown content
+- Implement **XSS protection**
+
+## Git & Development Workflow
+
+### Branch Strategy
+- Feature branches: `feature-name` or `001-create-a-web`
+- Follow **conventional commits**
+- Include **tests** in all PRs
+- **Squash commits** before merging
+
+### Testing Strategy
+- Run tests **before commits**
+- Maintain **CI/CD pipeline**
+- Test on **multiple browsers**
+- Validate **responsive design**
+
+## Deployment & Build
+
+### CLI commands
+- You are allowed to use CLI commands for the requested feature.
+- Avoid running CLI commands that require user input.
+- Keep in mind that commands may take long time. When that is not expected, add timeouts to commands.
+
+### Build Configuration
+- Use **Vite** for development and production builds
+- Optimize for **modern browsers**
+- Implement **tree shaking**
+- Generate **source maps** for debugging
+
+### Performance Monitoring
+- Monitor **Core Web Vitals**
+- Track **user interactions**
+- Optimize **loading performance**
+- Implement **error tracking**
+
+## Documentation Standards
+
+### Code Documentation
+- Use **JSDoc** for complex functions
+- Include **README** files for major features
+- Document **API interfaces**
+- Maintain **changelog** for releases
+
+### Component Documentation
+- Document **props** and **usage examples**
+- Include **accessibility** notes
+- Provide **testing** guidance
+- Document **styling** customization options
