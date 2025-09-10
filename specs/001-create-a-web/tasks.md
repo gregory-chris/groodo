@@ -178,10 +178,10 @@ npm i -D tailwindcss postcss autoprefixer \
 **Files**: `src/features/board/components/TaskCard.jsx`
 **Dependencies**: T010, T012
 ✓ When:
-- [ ] useSortable hook integrated
-- [ ] Drag handle added
-- [ ] Animation working
-- [ ] A11y attributes added
+- [x] useSortable hook integrated
+- [x] Drag handle added
+- [x] Animation working
+- [x] A11y attributes added
 
 ### T014: Column Drop Zones
 **Files**: `src/features/board/components/Column.jsx`
