@@ -65,11 +65,11 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/lib/storage.test.js`
 **Dependencies**: T001
 ✓ When:
-- [ ] Tests written first (RED)
-- [ ] saveState/loadState implemented
-- [ ] Version migration handling
-- [ ] Quota error handling
-- [ ] Tests passing (GREEN)
+- [x] Tests written first (RED)
+- [x] saveState/loadState implemented
+- [x] Version migration handling
+- [x] Quota error handling
+- [x] Tests passing (GREEN)
 
 ### T005: Implement Date Utils [P]
 **Files**:
