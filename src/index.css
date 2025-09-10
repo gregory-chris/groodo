@@ -27,8 +27,7 @@ body {
 }
 
 .header-content {
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
@@ -64,6 +63,7 @@ body {
 .week-nav {
   padding: 1rem 0;
   flex-shrink: 0;
+  width: 100%;
 }
 
 .week-nav-content {
@@ -76,8 +76,7 @@ body {
   border: 1px solid #f1f5f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1rem 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .week-range {
@@ -149,8 +148,7 @@ body {
 
 /* Main content */
 .main-content {
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 1.5rem 2rem;
   flex: 1;
   overflow: hidden;
@@ -158,15 +156,45 @@ body {
   flex-direction: column;
 }
 
+@media (max-width: 768px) {
+  .main-content {
+    padding: 0 1rem 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0 0.75rem 2rem;
+  }
+}
+
 /* Column grid */
 .columns-grid {
   display: grid;
-  grid-template-columns: repeat(5, 200px);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   flex: 1;
   overflow: hidden;
   min-height: 0;
-  justify-content: center;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .columns-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .columns-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .columns-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Column styles */
@@ -179,9 +207,8 @@ body {
   background: white;
   overflow: hidden;
   transition: all 0.2s ease;
-  width: 200px;
-  min-width: 200px;
-  max-width: 200px;
+  min-width: 180px;
+  width: 100%;
 }
 
 .column:hover {
