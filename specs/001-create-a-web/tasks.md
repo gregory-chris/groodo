@@ -24,8 +24,8 @@ git init
 git checkout -b 001-create-a-web
 ```
 ✓ When:
-- [ ] Project created with Vite + React
-- [ ] Git initialized with correct branch
+- [x] Project created with Vite + React
+- [x] Git initialized with correct branch
 
 ### T002: Install Dependencies [P]
 **Files**: `package.json`
