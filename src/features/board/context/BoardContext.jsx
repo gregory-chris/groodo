@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { saveState, loadState } from '../../../lib/storage.js';
 import { getCurrentWeek, getNextWeek, getPreviousWeek } from '../../../lib/date.js';
+import { usePersistence } from '../hooks/usePersistence.js';
 
 // Action types
 const ACTIONS = {
@@ -138,62 +139,18 @@ const BoardContext = createContext(null);
 export function BoardProvider({ children }) {
   const [state, dispatch] = useReducer(boardReducer, initialState);
 
-  // Load initial state from storage and set current week
-  useEffect(() => {
-    try {
-      const savedState = loadState();
-      let currentWeek;
-      
-      if (savedState && savedState.currentWeek && savedState.currentWeek.start && savedState.currentWeek.end) {
-        // Ensure currentWeek is a proper object with Date instances
-        currentWeek = {
-          start: new Date(savedState.currentWeek.start),
-          end: new Date(savedState.currentWeek.end)
-        };
-      } else {
-        currentWeek = getCurrentWeek();
-      }
+  // Initialize persistence hook for auto-save, load, error handling, and migration
+  const persistence = usePersistence(state, dispatch);
 
-      if (savedState) {
-        dispatch({
-          type: ACTIONS.LOAD_STATE,
-          payload: {
-            ...savedState,
-            currentWeek,
-            tasks: savedState.tasks || []
-          }
-        });
-      } else {
-        // No saved state, just set the current week
-        dispatch({
-          type: ACTIONS.SET_CURRENT_WEEK,
-          payload: currentWeek
-        });
-      }
-    } catch (error) {
-      console.warn('Failed to load saved state:', error);
-      // Set current week as fallback
+  // Effect to set initial currentWeek if not loaded from persistence
+  useEffect(() => {
+    if (state.currentWeek === null && !persistence.isLoading) {
       dispatch({
         type: ACTIONS.SET_CURRENT_WEEK,
         payload: getCurrentWeek()
       });
     }
-  }, []);
-
-  // Save state to storage whenever it changes (but only after currentWeek is initialized)
-  useEffect(() => {
-    if (state.currentWeek) {
-      try {
-        saveState({
-          tasks: state.tasks,
-          currentWeek: state.currentWeek
-        });
-      } catch (error) {
-        console.warn('Failed to save state:', error);
-        // Continue operation even if saving fails
-      }
-    }
-  }, [state.tasks, state.currentWeek]);
+  }, [state.currentWeek, persistence.isLoading]);
 
   // Action creators
   const addTask = useCallback((taskData) => {
@@ -279,7 +236,18 @@ export function BoardProvider({ children }) {
     setCurrentWeek,
     goToNextWeek,
     goToPreviousWeek,
-    goToCurrentWeek
+    goToCurrentWeek,
+    // Persistence functionality
+    persistence: {
+      isLoading: persistence.isLoading,
+      isSaving: persistence.isSaving,
+      error: persistence.error,
+      saveData: persistence.saveData,
+      loadData: persistence.loadData,
+      clearError: persistence.clearError,
+      exportData: persistence.exportData,
+      importData: persistence.importData,
+    }
   };
 
   return (
