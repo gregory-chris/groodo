@@ -126,11 +126,11 @@ npm i -D tailwindcss postcss autoprefixer \
 - `src/features/board/components/Column.test.jsx`
 **Dependencies**: T003, T006
 ✓ When:
-- [ ] Tests written first (RED)
-- [ ] Column layout implemented
-- [ ] Date/title display working
-- [ ] Today highlighting
-- [ ] Tests passing (GREEN)
+- [x] Tests written first (RED)
+- [x] Column layout implemented
+- [x] Date/title display working
+- [x] Today highlighting
+- [x] Tests passing (GREEN)
 
 ## Phase 4: Task Management Components
 
