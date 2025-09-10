@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Trash2, GripVertical } from 'lucide-react';
+import { Trash2, GripVertical, X, Check } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -174,38 +174,14 @@ function TaskCard({
                 className="flex-1 h-9 bg-gray-100 border border-gray-200 rounded-md hover:bg-gray-200 transition-all duration-150 flex items-center justify-center"
                 title="Cancel"
               >
-                <svg 
-                  className="w-4 h-4 text-gray-600" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M6 18L18 6M6 6l12 12" 
-                  />
-                </svg>
+                <X size={16} className="text-gray-600" />
               </button>
               <button
                 onClick={handleConfirmDelete}
                 className="flex-1 h-9 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-150 flex items-center justify-center shadow-sm hover:shadow-md"
                 title="Delete"
               >
-                <svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M5 13l4 4L19 7" 
-                  />
-                </svg>
+                <Check size={16} className="text-white" />
               </button>
             </div>
           </div>

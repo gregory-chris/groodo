@@ -42,10 +42,18 @@ function Column({ date, className = '', ...props }) {
     id: dropZoneId,
   });
 
-  // Get tasks for this column and sort by order
+  // Get tasks for this column and sort by completion status, then by order
+  // Incomplete tasks first, then completed tasks at the bottom
   const tasks = state.tasks
     .filter(task => task.column === columnKey)
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
+    .sort((a, b) => {
+      // If completion status is different, incomplete tasks come first
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
+      // If same completion status, sort by order
+      return (a.order || 0) - (b.order || 0);
+    });
   
   // Create array of task IDs for sortable context
   const taskIds = tasks.map(task => task.id);

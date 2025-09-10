@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBoardContext } from '../context/BoardContext';
-import { formatWeekRange, getCurrentWeek } from '../../../lib/date.js';
+import { formatWeekRange, getCurrentWeek, getWeekDates, getDateKey } from '../../../lib/date.js';
 
 /**
  * WeekNav component for navigating between weeks
@@ -24,17 +24,48 @@ function WeekNav() {
     actualCurrentWeek.start && actualCurrentWeek.start.getTime &&
     state.currentWeek.start.getTime() === actualCurrentWeek.start.getTime();
 
-  // Format the week range for display
+  // Calculate task statistics for the current week
+  const weekStats = useMemo(() => {
+    if (!state.currentWeek || !state.tasks) {
+      return { total: 0, completed: 0, pending: 0 };
+    }
+
+    try {
+      // Get dates for current viewing week
+      const weekDates = getWeekDates(state.currentWeek.start);
+      const weekDateKeys = weekDates.map(date => getDateKey(date));
+      
+      // Filter tasks for this week
+      const weekTasks = state.tasks.filter(task => 
+        weekDateKeys.includes(task.column)
+      );
+      
+      const total = weekTasks.length;
+      const completed = weekTasks.filter(task => task.completed).length;
+      const pending = total - completed;
+      
+      return { total, completed, pending };
+    } catch (error) {
+      console.error('Error calculating week stats:', error);
+      return { total: 0, completed: 0, pending: 0 };
+    }
+  }, [state.currentWeek, state.tasks]);
+
+  // Format the week range for display with task counts
   const getWeekRangeDisplay = () => {
     try {
       if (!state.currentWeek) {
         return 'Current Week';
       }
-      // If we're on the current week, show "Current Week"
-      if (isCurrentWeek) {
-        return 'Current Week';
+      
+      const baseText = isCurrentWeek ? 'Current Week' : formatWeekRange(state.currentWeek);
+      
+      // Add task count breakdown if there are tasks
+      if (weekStats.total > 0) {
+        return `${baseText} (${weekStats.total} tasks: ${weekStats.pending} new, ${weekStats.completed} completed)`;
       }
-      return formatWeekRange(state.currentWeek);
+      
+      return baseText;
     } catch (error) {
       return 'Current Week';
     }
@@ -46,7 +77,7 @@ function WeekNav() {
       className="week-nav-content"
     >
       {/* Week Range Display */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+      <div className="week-range-container">
         <h2 
           data-testid="week-range"
           className="week-range"
@@ -62,7 +93,7 @@ function WeekNav() {
           data-testid="prev-week-btn"
           onClick={goToPreviousWeek}
           aria-label="Previous week"
-          className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="nav-button"
         >
           <ChevronLeft size={20} />
         </button>
@@ -72,7 +103,7 @@ function WeekNav() {
           data-testid="today-btn"
           onClick={goToCurrentWeek}
           aria-label="Go to current week"
-          className="today-button"
+          className="today-button px-5"
         >
           Today
         </button>
@@ -82,7 +113,7 @@ function WeekNav() {
           data-testid="next-week-btn"
           onClick={goToNextWeek}
           aria-label="Next week"
-          className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="nav-button"
         >
           <ChevronRight size={20} />
         </button>

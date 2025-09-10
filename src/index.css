@@ -79,17 +79,23 @@ body {
   width: 100%;
 }
 
+.week-range-container {
+  flex: 1;
+}
+
 .week-range {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.375rem;
+  font-weight: 700;
   color: #701E2E;
-  letter-spacing: -0.025em;
+  margin: 0;
+  text-align: left;
+  line-height: 1.4;
 }
 
 .nav-buttons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .nav-button {
@@ -108,11 +114,9 @@ body {
 }
 
 .nav-button:hover {
-  background: #f8fafc;
-  border-color: #CF904E;
-  color: #CF904E;
+  background: linear-gradient(135deg, #BB1E3A 0%, #701E2E 100%);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(112, 30, 46, 0.3);
 }
 
 .nav-button:focus {
@@ -126,7 +130,7 @@ body {
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  padding: 0.5rem;
+  padding: 0.5rem 2rem;
   background: linear-gradient(135deg, #CF904E 0%, #BB1E3A 100%);
   color: white;
   border: none;
