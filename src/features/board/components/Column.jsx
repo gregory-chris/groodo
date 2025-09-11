@@ -82,14 +82,30 @@ function Column({ date, className = '', ...props }) {
 
   return (
     <div 
-      className={`column ${isTodayColumn ? 'column-today' : ''} ${className}`.trim()}
+      className={`flex flex-col rounded-xl shadow-lg border transition-all duration-200 overflow-hidden min-w-[180px] w-full ${
+        isTodayColumn 
+          ? 'bg-gradient-to-br from-secondary/5 to-accent/5 border-secondary/20 shadow-secondary/15' 
+          : 'bg-white border-gray-100 hover:shadow-xl hover:border-gray-200'
+      } ${className}`.trim()}
       data-testid="column"
       aria-label={`${getDayName(date)} tasks`}
       {...props}
     >
       {/* Column Header */}
-      <div className="column-header" role="banner">
-        <div className="column-day" data-testid="column-day">
+      <div 
+        className={`px-4 py-3 border-b flex-shrink-0 ${
+          isTodayColumn 
+            ? 'border-secondary/10 bg-gradient-to-br from-secondary/8 to-accent/8' 
+            : 'border-gray-50 bg-gray-50/80'
+        }`} 
+        role="banner"
+      >
+        <div 
+          className={`text-xs font-semibold tracking-wide uppercase ${
+            isTodayColumn ? 'text-primary' : 'text-gray-600'
+          }`} 
+          data-testid="column-day"
+        >
           {getDayName(date)}
         </div>
       </div>
@@ -97,12 +113,15 @@ function Column({ date, className = '', ...props }) {
       {/* Tasks Container - Drop Zone */}
       <div
         ref={setNodeRef}
-        className="column-tasks"
+        className={`flex-1 p-4 flex flex-col gap-3 overflow-y-auto scroll-smooth transition-colors duration-200 ${
+          isOver ? 'bg-secondary/5' : ''
+        }`}
         data-testid="column-tasks"
         role="listbox"
         aria-label={`Drop zone for ${getDayName(date)} tasks`}
         style={{
-          backgroundColor: isOver ? 'rgba(207, 144, 78, 0.05)' : 'transparent'
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#e2e8f0 #f8fafc'
         }}
       >
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
@@ -119,7 +138,7 @@ function Column({ date, className = '', ...props }) {
 
         {/* Empty State */}
         {tasks.length === 0 && (
-          <div className="empty-state">
+          <div className="text-gray-300 text-xs text-center py-8 px-2 opacity-60">
             <p>No tasks for this day</p>
           </div>
         )}
@@ -131,7 +150,7 @@ function Column({ date, className = '', ...props }) {
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
           onKeyDown={handleAddTask}
-          className="add-task-input"
+          className="w-full p-3 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors duration-200"
           data-testid="add-task-input"
         />
       </div>

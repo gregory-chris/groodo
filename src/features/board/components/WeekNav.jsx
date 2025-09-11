@@ -74,26 +74,26 @@ function WeekNav() {
   return (
     <div 
       data-testid="week-nav"
-      className="week-nav-content"
+      className="flex flex-row items-center justify-between bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 w-full"
     >
       {/* Week Range Display */}
-      <div className="week-range-container">
+      <div className="flex-1">
         <h2 
           data-testid="week-range"
-          className="week-range"
+          className="text-2xl font-bold text-primary m-0 text-left leading-normal"
         >
           {getWeekRangeDisplay()}
         </h2>
       </div>
 
       {/* Navigation Controls */}
-      <div className="nav-buttons">
+      <div className="flex items-center gap-3">
         {/* Previous Week Button */}
         <button
           data-testid="prev-week-btn"
           onClick={goToPreviousWeek}
           aria-label="Previous week"
-          className="nav-button"
+          className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary to-accent text-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20"
         >
           <ChevronLeft size={20} />
         </button>
@@ -103,7 +103,7 @@ function WeekNav() {
           data-testid="today-btn"
           onClick={goToCurrentWeek}
           aria-label="Go to current week"
-          className="today-button px-5"
+          className="flex items-center justify-center h-10 px-8 bg-gradient-to-br from-secondary to-orange-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20 whitespace-nowrap"
         >
           Today
         </button>
@@ -113,7 +113,7 @@ function WeekNav() {
           data-testid="next-week-btn"
           onClick={goToNextWeek}
           aria-label="Next week"
-          className="nav-button"
+          className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary to-accent text-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20"
         >
           <ChevronRight size={20} />
         </button>

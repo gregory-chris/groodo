@@ -57,8 +57,8 @@ function BoardContent() {
       </header>
 
       {/* Week Navigation */}
-      <div className="week-nav">
-        <div style={{ width: '100%', padding: '0 1.5rem' }}>
+      <div className="py-4 flex-shrink-0 w-full">
+        <div className="w-full px-6">
           <WeekNav />
         </div>
       </div>
@@ -68,7 +68,7 @@ function BoardContent() {
         <h2 className="sr-only">Task Board</h2>
         
         {/* Task Columns */}
-        <div className="grid grid-cols-5 gap-4 flex-1 overflow-hidden min-h-0 w-full justify-center lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
+        <div className="grid grid-cols-1 gap-4 flex-1 overflow-hidden min-h-0 w-full justify-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {weekDates
             .filter(date => date instanceof Date && !isNaN(date.getTime()))
             .map((date, index) => (
