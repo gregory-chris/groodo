@@ -114,8 +114,12 @@ function boardReducer(state, action) {
       
       // Create the final updated tasks array
       const updatedTasks = state.tasks.map(task => {
-        if (task.column === targetColumn) {
-          // Find this task in the reordered array
+        if (task.id === taskId) {
+          // This is the moving task - find it in the reordered array
+          const reorderedTask = reorderedTargetTasks.find(t => t.id === task.id);
+          return reorderedTask || { ...task, column: targetColumn, order: targetOrder };
+        } else if (task.column === targetColumn) {
+          // Other tasks in the target column - find them in the reordered array
           const reorderedTask = reorderedTargetTasks.find(t => t.id === task.id);
           return reorderedTask || task;
         }
