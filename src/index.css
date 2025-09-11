@@ -357,7 +357,7 @@ body {
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: normal;
-  cursor: text;
+  cursor: pointer;
   min-width: 0;
   max-width: 100%;
 }

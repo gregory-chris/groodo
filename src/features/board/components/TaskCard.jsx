@@ -16,13 +16,15 @@ function TaskCard({
   className = '' 
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Handle missing task prop
   if (!task) {
     return null;
   }
 
-  const { id, title, completed } = task;
+  const { id, title, completed, content = '' } = task;
+  const hasDescription = content && content.trim().length > 0;
 
   // useSortable hook for drag and drop functionality
   const {
@@ -38,6 +40,7 @@ function TaskCard({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    cursor: 'pointer'
   };
 
   // Handle task completion toggle
@@ -78,6 +81,21 @@ function TaskCard({
     }
   };
 
+  // Handle tooltip display
+  const handleMouseEnter = () => {
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
+  // Truncate description for tooltip
+  const truncateText = (text, maxLength = 150) => {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
   // Handle keyboard interactions
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -101,6 +119,8 @@ function TaskCard({
         className={`task-card ${completed ? 'task-completed' : ''} ${className}`.trim()}
         onDoubleClick={handleTaskDoubleClick}
         onKeyDown={handleKeyDown}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         tabIndex={0}
         role="button"
         aria-label={`Task: ${title}. ${completed ? 'Completed' : 'Not completed'}. Double-click or press Enter to edit, Space to toggle completion, Delete to remove.`}
@@ -132,11 +152,16 @@ function TaskCard({
           />
 
           {/* Task Title */}
-          <div
-            className="task-title"
-            data-testid="task-title"
-          >
-            {title}
+          <div className="flex items-center gap-2 cursor-pointer" title={hasDescription ? content : ''}>
+            <div
+              className="task-title cursor-pointer"
+              data-testid="task-title"
+            >
+              {title}
+            </div>
+            {hasDescription && (
+              <div className="w-2 h-2 bg-secondary rounded-full flex-shrink-0" title="Has description" />
+            )}
           </div>
         </div>
 
@@ -186,6 +211,20 @@ function TaskCard({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tooltip */}
+      {showTooltip && (
+        <div className="absolute z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 max-w-xs shadow-lg border border-gray-700 -top-2 left-full ml-2 transform -translate-y-full">
+          <div className="font-medium mb-1">{title}</div>
+          {hasDescription && (
+            <div className="text-gray-300 whitespace-pre-wrap">
+              {truncateText(content)}
+            </div>
+          )}
+          {/* Tooltip arrow */}
+          <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
         </div>
       )}
     </>
