@@ -124,6 +124,17 @@ function Column({ date, className = '', ...props }) {
           scrollbarColor: '#e2e8f0 #f8fafc'
         }}
       >
+        {/* Add Task Input - Now at the top */}
+        <input
+          type="text"
+          placeholder="Add a new task..."
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          onKeyDown={handleAddTask}
+          className="w-full p-3 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors duration-200"
+          data-testid="add-task-input"
+        />
+
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <TaskCard 
@@ -138,21 +149,10 @@ function Column({ date, className = '', ...props }) {
 
         {/* Empty State */}
         {tasks.length === 0 && (
-          <div className="text-gray-300 text-xs text-center py-8 px-2 opacity-60">
+          <div className="text-gray-300 text-xs text-center py-4 px-2 opacity-60">
             <p>No tasks for this day</p>
           </div>
         )}
-
-        {/* Add Task Input */}
-        <input
-          type="text"
-          placeholder="Add a new task..."
-          value={newTaskTitle}
-          onChange={(e) => setNewTaskTitle(e.target.value)}
-          onKeyDown={handleAddTask}
-          className="w-full p-3 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors duration-200"
-          data-testid="add-task-input"
-        />
       </div>
     </div>
   );
