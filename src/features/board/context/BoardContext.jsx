@@ -88,26 +88,36 @@ function boardReducer(state, action) {
     case ACTIONS.MOVE_TASK: {
       const { taskId, targetColumn, targetOrder } = action.payload;
       
-      // First, get all tasks in the target column except the moving task
-      const otherTasksInColumn = state.tasks.filter(
+      // Get the task being moved
+      const movingTask = state.tasks.find(task => task.id === taskId);
+      if (!movingTask) {
+        console.warn('Task not found for moving:', taskId);
+        return state;
+      }
+      
+      // Get all tasks in the target column (excluding the moving task)
+      const targetColumnTasks = state.tasks.filter(
         task => task.column === targetColumn && task.id !== taskId
       );
       
-      // Sort them by current order
-      otherTasksInColumn.sort((a, b) => (a.order || 0) - (b.order || 0));
+      // Sort target column tasks by order
+      targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
       
-      // Insert the moving task at the specified position and reorder all tasks
+      // Insert the moving task at the target position
+      targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
+      
+      // Reassign order values to all tasks in the target column
+      const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
+        ...task,
+        order: index
+      }));
+      
+      // Create the final updated tasks array
       const updatedTasks = state.tasks.map(task => {
-        if (task.id === taskId) {
-          // This is the task we're moving
-          return { ...task, column: targetColumn, order: targetOrder };
-        } else if (task.column === targetColumn) {
-          // Other tasks in the target column need their order updated
-          const currentIndex = otherTasksInColumn.findIndex(t => t.id === task.id);
-          if (currentIndex >= targetOrder) {
-            // Tasks after the insertion point get pushed down
-            return { ...task, order: currentIndex + 1 };
-          }
+        if (task.column === targetColumn) {
+          // Find this task in the reordered array
+          const reorderedTask = reorderedTargetTasks.find(t => t.id === task.id);
+          return reorderedTask || task;
         }
         return task;
       });

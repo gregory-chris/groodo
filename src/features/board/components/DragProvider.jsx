@@ -111,8 +111,15 @@ function DragProvider({
         // Dropped on a column (overId should be the column key directly)
         const targetColumn = overId;
         
-        // Get existing tasks in target column to determine order
-        const tasksInColumn = state.tasks.filter(task => task.column === targetColumn);
+        // Get existing tasks in target column (excluding the moving task)
+        const tasksInColumn = state.tasks.filter(
+          task => task.column === targetColumn && task.id !== activeId
+        );
+        
+        // Sort tasks by order to determine the correct insertion position
+        tasksInColumn.sort((a, b) => (a.order || 0) - (b.order || 0));
+        
+        // Add to the end of the column
         const newOrder = tasksInColumn.length;
         
         // Move task to different column at the end
@@ -130,19 +137,46 @@ function DragProvider({
           return;
         }
 
-        // Get the position where we want to insert
-        const overTaskOrder = overTask.order || 0;
+        const targetColumn = overTask.column;
         
-        if (activeTask.column === overTask.column) {
-          // Same column - reorder within column
-          if (moveTask) {
-            moveTask(activeId, activeTask.column, overTaskOrder);
+        // Get all tasks in target column (excluding the moving task)
+        const tasksInColumn = state.tasks.filter(
+          task => task.column === targetColumn && task.id !== activeId
+        );
+        
+        // Sort tasks by order
+        tasksInColumn.sort((a, b) => (a.order || 0) - (b.order || 0));
+        
+        // Find the position of the task we're dropping on
+        const overTaskIndex = tasksInColumn.findIndex(task => task.id === overId);
+        
+        let targetOrder;
+        
+        if (activeTask.column === targetColumn) {
+          // Same column - reordering within column
+          // Get all tasks in the column including the moving task to determine original position
+          const allTasksInColumn = state.tasks.filter(task => task.column === targetColumn);
+          allTasksInColumn.sort((a, b) => (a.order || 0) - (b.order || 0));
+          
+          const activeTaskOriginalIndex = allTasksInColumn.findIndex(task => task.id === activeId);
+          const overTaskOriginalIndex = allTasksInColumn.findIndex(task => task.id === overId);
+          
+          if (activeTaskOriginalIndex < overTaskOriginalIndex) {
+            // Moving down - when moving down, we want to insert AFTER the target task
+            // because visually we're dropping "between" the target and the next item
+            targetOrder = overTaskIndex + 1;
+          } else {
+            // Moving up - insert at the target task's position (before it)
+            // This matches the visual expectation of replacing the target's position
+            targetOrder = overTaskIndex;
           }
         } else {
-          // Different column - move to new column at the position of the task we're hovering over
-          if (moveTask) {
-            moveTask(activeId, overTask.column, overTaskOrder);
-          }
+          // Different column - insert at the target task's position (before it)
+          targetOrder = overTaskIndex;
+        }
+        
+        if (moveTask) {
+          moveTask(activeId, targetColumn, targetOrder);
         }
       }
     } catch (error) {
