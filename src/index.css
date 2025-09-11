@@ -470,6 +470,44 @@ body {
   white-space: normal;
 }
 
+/* Task action buttons */
+.task-edit,
+.task-delete {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  padding: 4px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-edit {
+  color: #6b7280;
+}
+
+.task-edit:hover {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #374151;
+}
+
+.task-delete {
+  color: #ef4444;
+}
+
+.task-delete:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Show action buttons only on hover */
+.task-card:hover .task-edit,
+.task-card:hover .task-delete {
+  opacity: 1;
+}
+
 /* Modal animation */
 @keyframes fadeInScale {
   from {
