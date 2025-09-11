@@ -64,11 +64,11 @@ function BoardContent() {
       </div>
 
       {/* Main Content - Task Board */}
-      <main id="main-content" className="main-content">
+      <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-hidden flex flex-col md:px-4 sm:px-3">
         <h2 className="sr-only">Task Board</h2>
         
         {/* Task Columns */}
-        <div className="columns-grid">
+        <div className="grid grid-cols-5 gap-4 flex-1 overflow-hidden min-h-0 w-full justify-center lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
           {weekDates
             .filter(date => date instanceof Date && !isNaN(date.getTime()))
             .map((date, index) => (

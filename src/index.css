@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Basic reset and styles for the app */
 * {
   box-sizing: border-box;
@@ -150,56 +154,7 @@ body {
   box-shadow: 0 4px 8px rgba(207, 144, 78, 0.4);
 }
 
-/* Main content */
-.main-content {
-  width: 100%;
-  padding: 0 1.5rem 2rem;
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    padding: 0 1rem 2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .main-content {
-    padding: 0 0.75rem 2rem;
-  }
-}
-
-/* Column grid */
-.columns-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1rem;
-  flex: 1;
-  overflow: hidden;
-  min-height: 0;
-  width: 100%;
-}
-
-@media (max-width: 1024px) {
-  .columns-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .columns-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .columns-grid {
-    grid-template-columns: 1fr;
-  }
-}
+/* Grid system now uses Tailwind classes */
 
 /* Column styles */
 .column {
