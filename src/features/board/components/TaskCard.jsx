@@ -191,7 +191,7 @@ function TaskCard({
           >
             <div className="text-center mb-6">
               <p className="text-gray-900 font-medium text-base">
-                Delete?
+                Delete '{title}'?
               </p>
             </div>
             <div className="flex gap-3">

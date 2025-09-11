@@ -76,12 +76,30 @@ function boardReducer(state, action) {
 
     case ACTIONS.TOGGLE_TASK_COMPLETE: {
       const { taskId } = action.payload;
+      const targetTask = state.tasks.find(task => task.id === taskId);
+      if (!targetTask) return state;
+
+      const willBeCompleted = !targetTask.completed;
+      const updatedTask = { ...targetTask, completed: willBeCompleted };
+
+      // If task is being uncompleted (marked as not done), move it to the end
+      if (!willBeCompleted) {
+        // Get all tasks in the same column, excluding the target task
+        const otherTasksInColumn = state.tasks.filter(
+          task => task.column === targetTask.column && task.id !== taskId
+        );
+        
+        // Get the highest order in the column
+        const maxOrder = Math.max(...otherTasksInColumn.map(task => task.order || 0), -1);
+        
+        // Update the target task with new order (last position)
+        updatedTask.order = maxOrder + 1;
+      }
+
       return {
         ...state,
-        tasks: state.tasks.map(task =>
-          task.id === taskId
-            ? { ...task, completed: !task.completed }
-            : task
+        tasks: state.tasks.map(task => 
+          task.id === taskId ? updatedTask : task
         )
       };
     }
