@@ -1,12 +1,29 @@
-# React + Vite
+# Groodo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive weekly task management web application with a calendar-like interface designed for Sunday-Thursday work weeks.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Weekly Task Board**: Organize tasks across 5 working days (Sunday-Thursday)
+- **Drag & Drop**: Intuitive task reordering and cross-column movement
+- **Rich Task Editing**: Modal-based editing with markdown description support
+- **Responsive Design**: Adapts from 1-5 columns based on screen size
+- **Local Persistence**: Automatic save/load using localStorage
+- **Week Navigation**: Navigate between weeks with visual indicators
 
-## Expanding the ESLint configuration
+## Technologies
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React 18 with functional components and hooks
+- **Build Tool**: Vite for fast development and optimized builds
+- **Styling**: Tailwind CSS with custom color palette
+- **Drag & Drop**: @dnd-kit for accessible drag and drop functionality
+- **Markdown**: react-markdown with GitHub-flavored markdown support
+- **Icons**: Lucide React for consistent iconography
+- **Testing**: Vitest with React Testing Library
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
