@@ -157,31 +157,31 @@ function TaskCard({
           onClick={handleCancelDelete}
         >
           <div 
-            className="bg-white rounded-lg p-4 max-w-xs mx-4 shadow-lg border border-gray-200"
+            className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-lg border border-gray-200"
             onClick={(e) => e.stopPropagation()}
             style={{
               animation: 'fadeInScale 0.15s ease-out'
             }}
           >
-            <div className="text-center mb-4">
-              <p className="text-gray-900 font-medium text-sm">
+            <div className="text-center mb-6">
+              <p className="text-gray-900 font-medium text-base">
                 Delete?
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={handleCancelDelete}
-                className="flex-1 h-9 bg-gray-100 border border-gray-200 rounded-md hover:bg-gray-200 transition-all duration-150 flex items-center justify-center"
+                className="flex-1 h-12 bg-gray-100 border border-gray-200 px-5 rounded-lg hover:bg-gray-200 transition-all duration-150 flex items-center justify-center"
                 title="Cancel"
               >
-                <X size={16} className="text-gray-600" />
+                <X size={20} className="text-gray-600" />
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="flex-1 h-9 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-150 flex items-center justify-center shadow-sm hover:shadow-md"
+                className="flex-1 h-12 bg-red-500 text-white px-5 rounded-lg hover:bg-red-600 transition-all duration-150 flex items-center justify-center shadow-sm hover:shadow-md"
                 title="Delete"
               >
-                <Check size={16} className="text-white" />
+                <Check size={20} className="text-white" />
               </button>
             </div>
           </div>
