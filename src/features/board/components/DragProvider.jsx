@@ -97,7 +97,6 @@ function DragProvider({
       // Find the active task
       const activeTask = state.tasks?.find(task => task.id === activeId);
       if (!activeTask) {
-        console.warn('Active task not found:', activeId);
         if (onDragEnd) {
           onDragEnd(event);
         }
@@ -130,7 +129,6 @@ function DragProvider({
         // Find the target task to determine its position and column
         const overTask = state.tasks.find(task => task.id === overId);
         if (!overTask) {
-          console.warn('Target task not found:', overId);
           if (onDragEnd) {
             onDragEnd(event);
           }
@@ -180,7 +178,7 @@ function DragProvider({
         }
       }
     } catch (error) {
-      console.error('Error handling drag end:', error);
+      // Silent error handling for drag operations
     }
 
     // Call custom onDragEnd handler if provided

@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
 import { saveState, loadState } from '../../../lib/storage.js';
 import { getCurrentWeek, getNextWeek, getPreviousWeek } from '../../../lib/date.js';
 import { usePersistence } from '../hooks/usePersistence.js';
+import TaskModal from '../components/TaskModal';
 
 // Action types
 const ACTIONS = {
@@ -39,7 +40,7 @@ function boardReducer(state, action) {
       const newTask = {
         id: action.payload.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: action.payload.title || '',
-        description: action.payload.description || '',
+        content: action.payload.content || '',
         column: action.payload.column || 'general',
         completed: false,
         createdAt: Date.now(),
@@ -91,7 +92,6 @@ function boardReducer(state, action) {
       // Get the task being moved
       const movingTask = state.tasks.find(task => task.id === taskId);
       if (!movingTask) {
-        console.warn('Task not found for moving:', taskId);
         return state;
       }
       
@@ -173,6 +173,12 @@ const BoardContext = createContext(null);
 // Provider component
 export function BoardProvider({ children }) {
   const [state, dispatch] = useReducer(boardReducer, initialState);
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    mode: 'edit',
+    task: null,
+    column: null
+  });
 
   // Initialize persistence hook for auto-save, load, error handling, and migration
   const persistence = usePersistence(state, dispatch);
@@ -188,7 +194,10 @@ export function BoardProvider({ children }) {
   }, [state.currentWeek, persistence.isLoading]);
 
   // Action creators
-  const addTask = useCallback((taskData) => {
+  const addTask = useCallback((titleOrData, column, content = '') => {
+    const taskData = typeof titleOrData === 'string' 
+      ? { title: titleOrData, column, content }
+      : titleOrData;
     dispatch({
       type: ACTIONS.ADD_TASK,
       payload: taskData
@@ -274,8 +283,12 @@ export function BoardProvider({ children }) {
     goToCurrentWeek,
     // Mock function for openTaskModal
     openTaskModal: (mode, taskData) => {
-      // Simple implementation - just log for now
-      console.log('Modal would open:', mode, taskData);
+      setModalState({
+        isOpen: true,
+        mode,
+        task: mode === 'edit' ? taskData : null,
+        column: mode === 'create' ? taskData?.column : null
+      });
     },
     // Persistence functionality
     persistence: {
@@ -290,9 +303,37 @@ export function BoardProvider({ children }) {
     }
   };
 
+  // Modal handlers
+  const handleModalClose = useCallback(() => {
+    setModalState({
+      isOpen: false,
+      mode: 'edit',
+      task: null,
+      column: null
+    });
+  }, []);
+
+  const handleModalSave = useCallback((taskIdOrData, updates) => {
+    if (modalState.mode === 'edit') {
+      // Edit existing task
+      updateTask(taskIdOrData, updates);
+    } else {
+      // Create new task
+      addTask(taskIdOrData.title, modalState.column, taskIdOrData.content);
+    }
+    handleModalClose();
+  }, [modalState.mode, modalState.column, updateTask, addTask, handleModalClose]);
+
   return (
     <BoardContext.Provider value={contextValue}>
       {children}
+      <TaskModal
+        isOpen={modalState.isOpen}
+        mode={modalState.mode}
+        task={modalState.task}
+        onClose={handleModalClose}
+        onSave={handleModalSave}
+      />
     </BoardContext.Provider>
   );
 }

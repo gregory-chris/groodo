@@ -68,9 +68,10 @@ function TaskCard({
   };
 
   // Handle task editing
-  const handleTaskClick = (e) => {
-    // Only trigger edit if clicking on the text area, not other interactive elements
+  const handleTaskDoubleClick = (e) => {
+    // Only trigger edit if double-clicking on the text area, not other interactive elements
     if (e.target.classList.contains('task-title') || e.target.closest('.task-content')) {
+      e.stopPropagation();
       if (onEdit) {
         onEdit(task);
       }
@@ -84,7 +85,7 @@ function TaskCard({
       if (e.key === ' ') {
         handleToggleComplete(e);
       } else {
-        handleTaskClick(e);
+        handleTaskDoubleClick(e);
       }
     } else if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
@@ -98,11 +99,11 @@ function TaskCard({
         ref={setNodeRef}
         style={style}
         className={`task-card ${completed ? 'task-completed' : ''} ${className}`.trim()}
-        onClick={handleTaskClick}
+        onDoubleClick={handleTaskDoubleClick}
         onKeyDown={handleKeyDown}
         tabIndex={0}
         role="button"
-        aria-label={`Task: ${title}. ${completed ? 'Completed' : 'Not completed'}. Press Enter to edit, Space to toggle completion, Delete to remove.`}
+        aria-label={`Task: ${title}. ${completed ? 'Completed' : 'Not completed'}. Double-click or press Enter to edit, Space to toggle completion, Delete to remove.`}
         data-testid="task-card"
         {...attributes}
       >

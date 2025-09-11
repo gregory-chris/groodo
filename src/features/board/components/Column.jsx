@@ -11,7 +11,7 @@ import TaskCard from './TaskCard';
  * Features drag and drop functionality and task management
  */
 function Column({ date, className = '', ...props }) {
-  const { state, addTask, deleteTask, toggleTaskComplete, openTaskModal } = useBoardContext();
+  const { state, addTask, deleteTask, toggleTaskComplete, updateTask, openTaskModal } = useBoardContext();
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
   // Validate date prop
@@ -76,7 +76,7 @@ function Column({ date, className = '', ...props }) {
     openTaskModal('create', { column: columnKey });
   };
 
-  const openEditModal = (task) => {
+  const handleEditTask = (task) => {
     openTaskModal('edit', task);
   };
 
@@ -140,7 +140,7 @@ function Column({ date, className = '', ...props }) {
             <TaskCard 
               key={task.id} 
               task={task}
-              onEdit={openEditModal}
+              onEdit={handleEditTask}
               onDelete={deleteTask}
               onToggleComplete={toggleTaskComplete}
             />
