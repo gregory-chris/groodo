@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Trash2, GripVertical, X, Check } from 'lucide-react';
+import { Trash2, GripVertical, X, Check, Edit3 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -71,13 +71,10 @@ function TaskCard({
   };
 
   // Handle task editing
-  const handleTaskDoubleClick = (e) => {
-    // Only trigger edit if double-clicking on the text area, not other interactive elements
-    if (e.target.classList.contains('task-title') || e.target.closest('.task-content')) {
-      e.stopPropagation();
-      if (onEdit) {
-        onEdit(task);
-      }
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    if (onEdit) {
+      onEdit(task);
     }
   };
 
@@ -103,7 +100,7 @@ function TaskCard({
       if (e.key === ' ') {
         handleToggleComplete(e);
       } else {
-        handleTaskDoubleClick(e);
+        handleEditClick(e);
       }
     } else if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
@@ -117,13 +114,12 @@ function TaskCard({
         ref={setNodeRef}
         style={style}
         className={`task-card ${completed ? 'task-completed' : ''} ${className}`.trim()}
-        onDoubleClick={handleTaskDoubleClick}
         onKeyDown={handleKeyDown}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         tabIndex={0}
         role="button"
-        aria-label={`Task: ${title}. ${completed ? 'Completed' : 'Not completed'}. Double-click or press Enter to edit, Space to toggle completion, Delete to remove.`}
+        aria-label={`Task: ${title}. ${completed ? 'Completed' : 'Not completed'}. Press Enter to edit, Space to toggle completion, Delete to remove.`}
         data-testid="task-card"
         {...attributes}
       >
@@ -165,15 +161,28 @@ function TaskCard({
           </div>
         </div>
 
-        {/* Delete Button */}
-        <button
-          className="task-delete"
-          onClick={handleDeleteClick}
-          aria-label={`Delete task "${title}"`}
-          data-testid="task-delete"
-        >
-          <Trash2 size={12} />
-        </button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-1">
+          {/* Edit Button */}
+          <button
+            className="task-edit"
+            onClick={handleEditClick}
+            aria-label={`Edit task "${title}"`}
+            data-testid="task-edit"
+          >
+            <Edit3 size={12} />
+          </button>
+
+          {/* Delete Button */}
+          <button
+            className="task-delete"
+            onClick={handleDeleteClick}
+            aria-label={`Delete task "${title}"`}
+            data-testid="task-delete"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
       </div>
 
       {/* Delete Confirmation Modal */}
