@@ -113,7 +113,7 @@ function TaskCard({
       <div
         ref={setNodeRef}
         style={style}
-        className={`task-card ${completed ? 'task-completed' : ''} ${className}`.trim()}
+        className={`task-card ${completed ? 'task-completed' : ''} ${hasDescription ? 'task-has-description' : ''} ${className}`.trim()}
         onKeyDown={handleKeyDown}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -148,16 +148,13 @@ function TaskCard({
           />
 
           {/* Task Title */}
-          <div className="flex items-center gap-2 cursor-pointer" title={hasDescription ? content : ''}>
+          <div className="cursor-pointer" title={hasDescription ? content : ''}>
             <div
               className="task-title cursor-pointer"
               data-testid="task-title"
             >
               {title}
             </div>
-            {hasDescription && (
-              <div className="w-2 h-2 bg-secondary rounded-full flex-shrink-0" title="Has description" />
-            )}
           </div>
         </div>
 

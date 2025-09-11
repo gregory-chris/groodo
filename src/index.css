@@ -508,6 +508,18 @@ body {
   opacity: 1;
 }
 
+/* Task card with description styling */
+.task-has-description {
+  border-bottom: 3px solid #CF904E;
+  border-bottom-color: rgba(207, 144, 78, 0.7);
+}
+
+/* Keep description border on hover */
+.task-has-description:hover {
+  border-bottom: 3px solid #CF904E;
+  border-bottom-color: rgba(207, 144, 78, 0.8);
+}
+
 /* Modal animation */
 @keyframes fadeInScale {
   from {
