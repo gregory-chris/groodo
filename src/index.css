@@ -47,8 +47,8 @@ body {
 }
 
 .header span {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.5rem;
+  color: #CF904E;
   margin-left: 0.5rem;
   font-weight: 400;
 }

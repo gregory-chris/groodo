@@ -31,7 +31,7 @@ function Header() {
               </div>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-gray-900">Groodo</h1>
+              <h1 className="text-xl font-bold text-gray-900">GrooDo</h1>
               <p className="text-xs text-gray-500 hidden sm:block">Weekly Task Management</p>
             </div>
           </div>

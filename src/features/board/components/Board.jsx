@@ -49,9 +49,22 @@ function BoardContent() {
       {/* Header with app title */}
       <header className="header">
         <div className="header-content">
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <h1>Groodo</h1>
-            <span>Weekly task management</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <h1>GrooDo</h1>
+              <span>Weekly task management</span>
+            </div>
+            <div style={{ color: '#CF904E', fontWeight: 600, fontSize: '1.25rem' }}
+              title='Groodo - Task Management'>
+              <img 
+                src="/groodo_logo_2.png" 
+                alt="Groodo Logo" 
+                style={{ 
+                  height: '2rem', 
+                  width: 'auto' 
+                }}
+              />
+            </div>
           </div>
         </div>
       </header>
