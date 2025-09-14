@@ -101,12 +101,12 @@ function Column({ date, className = '', ...props }) {
         role="banner"
       >
         <div 
-          className={`text-xs font-semibold tracking-wide uppercase ${
+          className={`text-xs font-semibold tracking-wide ${
             isTodayColumn ? 'text-primary' : 'text-gray-600'
           }`} 
           data-testid="column-day"
         >
-          {getDayName(date)}
+          {getDayName(date)}, {formatDate(date, 'MMM d')}
         </div>
       </div>
 
