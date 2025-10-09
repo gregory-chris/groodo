@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { saveState, loadState } from '../../../lib/storage.js';
+import { useAuth } from '../../auth/AuthContext.jsx';
+import * as remoteTasks from '../../../lib/remoteTasksClient.js';
 
 /**
  * Custom hook for handling data persistence with auto-save, error handling, and migration
@@ -11,6 +13,7 @@ export function usePersistence(state, dispatch) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+  const { user, status } = useAuth();
   
   // Use refs to track debounce timers and prevent memory leaks
   const autoSaveTimeoutRef = useRef(null);
@@ -40,14 +43,44 @@ export function usePersistence(state, dispatch) {
     setError(null);
 
     try {
-      await saveState(state);
+      if (status === 'authenticated' && user) {
+        // Push delta to server: naive approach, upsert all tasks
+        // In a real app, track changes; here we sync all tasks
+        const tasks = state.tasks || [];
+        // Fetch remote tasks to compute upserts/deletes
+        const remote = await remoteTasks.listTasks().catch(() => []);
+        const remoteById = new Map(remote.map(t => [t.id, t]));
+
+        // Upsert local tasks
+        for (const t of tasks) {
+          if (remoteById.has(t.id)) {
+            // Update if changed
+            const r = remoteById.get(t.id);
+            const changed = ['title','content','column','completed','order','createdAt']
+              .some(k => (r?.[k] ?? null) !== (t?.[k] ?? null));
+            if (changed) await remoteTasks.updateTask(t.id, t);
+          } else {
+            await remoteTasks.createTask(t);
+          }
+        }
+
+        // Delete remote tasks not present locally
+        const localIds = new Set(tasks.map(t => t.id));
+        for (const r of remote) {
+          if (!localIds.has(r.id)) {
+            await remoteTasks.deleteTask(r.id).catch(() => {});
+          }
+        }
+      } else {
+        await saveState(state);
+      }
     } catch (err) {
       console.error('Failed to save state:', err);
       setError('Failed to save data. Please try again.');
     } finally {
       setIsSaving(false);
     }
-  }, [state]);
+  }, [state, status, user]);
 
   /**
    * Load data from storage with error handling and migration
@@ -57,7 +90,25 @@ export function usePersistence(state, dispatch) {
     setError(null);
 
     try {
-      const savedState = await loadState();
+      let savedState = null;
+      if (status === 'authenticated' && user) {
+        // Load from server
+        const remote = await remoteTasks.listTasks();
+        savedState = {
+          tasks: Array.isArray(remote) ? remote.map((t, idx) => ({
+            id: t.id,
+            title: t.title ?? '',
+            content: t.content ?? '',
+            column: t.column ?? 'general',
+            completed: !!t.completed,
+            createdAt: t.createdAt ?? Date.now(),
+            order: typeof t.order === 'number' ? t.order : idx,
+          })) : [],
+          currentWeek: new Date(),
+        };
+      } else {
+        savedState = await loadState();
+      }
       
       if (savedState) {
         // Migrate data if needed and dispatch to state
@@ -69,7 +120,18 @@ export function usePersistence(state, dispatch) {
 
         // Save migrated data back if migration occurred
         if (migratedState !== savedState) {
-          await saveState(migratedState);
+          if (status === 'authenticated' && user) {
+            // Push migrated to remote
+            const tasks = migratedState.tasks || [];
+            const remote = await remoteTasks.listTasks().catch(() => []);
+            const remoteById = new Map(remote.map(t => [t.id, t]));
+            for (const t of tasks) {
+              if (remoteById.has(t.id)) await remoteTasks.updateTask(t.id, t);
+              else await remoteTasks.createTask(t);
+            }
+          } else {
+            await saveState(migratedState);
+          }
         }
       }
     } catch (err) {
@@ -78,7 +140,7 @@ export function usePersistence(state, dispatch) {
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, status, user]);
 
   /**
    * Migrate data from old formats to current format
@@ -197,6 +259,13 @@ export function usePersistence(state, dispatch) {
 
     initializeData();
   }, [loadData]);
+
+  // Reload tasks when auth status changes (guest <-> authenticated)
+  useEffect(() => {
+    if (isInitializedRef.current) {
+      loadData();
+    }
+  }, [status, user, loadData]);
 
   /**
    * Cleanup timeouts on unmount
