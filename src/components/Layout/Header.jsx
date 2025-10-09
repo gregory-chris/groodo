@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { UserRound, LogOut, LogIn, UserPlus } from 'lucide-react';
+import { useAuth } from '../../features/auth/AuthContext.jsx';
+import AuthModal from '../../features/auth/AuthModal.jsx';
 
 /**
  * Header component for the Groodo weekly task management app
  * Features responsive design with Tailwind CSS
  */
 function Header() {
+  const { user, status, openAuthModal, performSignOut, modalState, setModalState, closeAuthModal } = useAuth();
+
+  const isLoading = status === 'loading';
+  const isGuest = status === 'guest' || !user;
+  const todayStr = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }), []);
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,35 +63,19 @@ function Header() {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
                 />
               </svg>
-              <span>{new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'short', 
-                day: 'numeric' 
-              })}</span>
+              <span>{todayStr}</span>
             </div>
 
             {/* Menu button for mobile */}
-            <div className="md:hidden">
+            <div className="relative flex items-center">
+              {/* User menu */}
               <button
                 type="button"
-                className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-                aria-expanded="false"
-                aria-label="Open menu"
+                className="p-2 rounded-full text-gray-600 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                aria-label="User menu"
+                onClick={() => setModalState(s => ({ ...s, open: true, mode: isGuest ? 'sign-in' : s.mode }))}
               >
-                <svg 
-                  className="w-6 h-6" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M4 6h16M4 12h16M4 18h16" 
-                  />
-                </svg>
+                <UserRound className="w-6 h-6" />
               </button>
             </div>
           </nav>
@@ -93,13 +86,17 @@ function Header() {
       <div className="md:hidden border-t border-gray-200 bg-gray-50 px-4 py-3">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span className="font-medium">Today</span>
-          <span>{new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            month: 'short', 
-            day: 'numeric' 
-          })}</span>
+          <span>{todayStr}</span>
         </div>
       </div>
+
+      {/* Auth modal */}
+      <AuthModal
+        open={!!modalState?.open}
+        mode={modalState?.mode === 'sign-up' ? 'sign-up' : 'sign-in'}
+        info={modalState?.info}
+        onClose={closeAuthModal}
+      />
     </header>
   );
 }
