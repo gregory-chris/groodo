@@ -23,22 +23,22 @@ async function request(path, options = {}) {
 }
 
 export async function listTasks() {
-  const data = await request('/tasks', { method: 'GET' });
+  const data = await request('/api/tasks', { method: 'GET' });
   return Array.isArray(data) ? data : (data?.items || []);
 }
 
 export async function createTask(task) {
-  const data = await request('/tasks', { method: 'POST', body: JSON.stringify(task) });
+  const data = await request('/api/tasks', { method: 'POST', body: JSON.stringify(task) });
   return data;
 }
 
 export async function updateTask(taskId, updates) {
-  const data = await request(`/tasks/${encodeURIComponent(taskId)}`, { method: 'PATCH', body: JSON.stringify(updates) });
+  const data = await request(`/api/task/${encodeURIComponent(taskId)}`, { method: 'PATCH', body: JSON.stringify(updates) });
   return data;
 }
 
 export async function deleteTask(taskId) {
-  await request(`/tasks/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
+  await request(`/api/task/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
 }
 
 
