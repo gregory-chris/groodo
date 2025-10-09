@@ -27,7 +27,7 @@ async function request(path, options = {}) {
 }
 
 export async function signIn({ email, password }) {
-  const data = await request('/auth/sign-in', {
+  const data = await request('/api/users/signin', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
@@ -38,7 +38,7 @@ export async function signIn({ email, password }) {
 }
 
 export async function signUp({ email, password, username }) {
-  const data = await request('/auth/sign-up', {
+  const data = await request('/api/users/signup', {
     method: 'POST',
     body: JSON.stringify({ email, password, username }),
   });
@@ -48,7 +48,7 @@ export async function signUp({ email, password, username }) {
 
 export async function signOut() {
   try {
-    await request('/auth/sign-out', { method: 'POST' });
+    await request('/api/users/signout', { method: 'POST' });
   } catch {
     // Ignore network errors for sign out
   }
@@ -56,7 +56,7 @@ export async function signOut() {
 }
 
 export async function getMe() {
-  const data = await request('/auth/me', { method: 'GET' });
+  const data = await request('/api/users/profile', { method: 'GET' });
   // Sliding expiration on activity
   touchCookie(TOKEN_COOKIE_NAME, SLIDING_SECONDS);
   return data;
