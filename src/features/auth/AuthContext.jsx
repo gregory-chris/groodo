@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
       return { ok: true };
     } catch (err) {
       dispatch({ type: 'ERROR', payload: err?.message || 'Sign-in failed' });
-      return { ok: false, error: err?.message };
+      return { ok: false, error: err?.message, validationErrors: err?.validationErrors };
     }
   }, [loadUser, closeAuthModal]);
 
@@ -85,7 +85,7 @@ export function AuthProvider({ children }) {
       return { ok: true, data: res };
     } catch (err) {
       dispatch({ type: 'ERROR', payload: err?.message || 'Sign-up failed' });
-      return { ok: false, error: err?.message };
+      return { ok: false, error: err?.message, validationErrors: err?.validationErrors };
     }
   }, []);
 

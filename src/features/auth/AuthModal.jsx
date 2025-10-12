@@ -5,15 +5,19 @@ import { useAuth } from './AuthContext.jsx';
 export default function AuthModal({ open, mode, info, onClose }) {
   const firstFieldRef = useRef(null);
   const { performSignIn, performSignUp, status, error } = useAuth();
-  const [form, setForm] = useState({ email: '', password: '', username: '' });
+  const [form, setForm] = useState({ email: '', password: '', fullName: '', passwordConfirm: '' });
   const [localError, setLocalError] = useState('');
+  const [validationErrors, setValidationErrors] = useState(null);
 
   useEffect(() => {
     if (open && firstFieldRef.current) {
       firstFieldRef.current.focus();
     }
-    // Clear local error when opening or switching modes
-    if (open) setLocalError('');
+    // Clear local error and validation errors when opening or switching modes
+    if (open) {
+      setLocalError('');
+      setValidationErrors(null);
+    }
   }, [open, mode]);
 
   useEffect(() => {
@@ -32,14 +36,35 @@ export default function AuthModal({ open, mode, info, onClose }) {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLocalError('');
+    setValidationErrors(null);
+    
+    // Validate passwords match for sign-up
+    if (mode === 'sign-up' && form.password !== form.passwordConfirm) {
+      setLocalError('Passwords do not match');
+      return;
+    }
+    
     try {
-      setLocalError('');
       if (mode === 'sign-in') {
         const res = await performSignIn({ email: form.email, password: form.password });
-        if (!res.ok) setLocalError(res.error || 'Failed to sign in');
+        if (!res.ok) {
+          // Display validation errors if available, otherwise show general error
+          if (res.validationErrors && res.validationErrors.length > 0) {
+            setValidationErrors(res.validationErrors);
+          } else {
+            setLocalError(res.error || 'Failed to sign in');
+          }
+        }
       } else {
-        const res = await performSignUp({ email: form.email, password: form.password, username: form.username });
-        if (!res.ok) setLocalError(res.error || 'Failed to sign up');
+        const res = await performSignUp({ email: form.email, password: form.password, fullName: form.fullName });
+        if (!res.ok) {
+          // Display validation errors if available, otherwise show general error
+          if (res.validationErrors && res.validationErrors.length > 0) {
+            setValidationErrors(res.validationErrors);
+          } else {
+            setLocalError(res.error || 'Failed to sign up');
+          }
+        }
       }
     } catch (err) {
       setLocalError(err?.message || 'Something went wrong');
@@ -50,32 +75,44 @@ export default function AuthModal({ open, mode, info, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/30" onClick={() => { setLocalError(''); onClose?.(); }} />
+      <div className="absolute inset-0 bg-black/30" onClick={() => { setLocalError(''); setValidationErrors(null); onClose?.(); }} />
       <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">
           {mode === 'sign-in' ? 'Sign in' : 'Sign up'}
         </h2>
         {info ? <p className="text-xs text-gray-600 mb-3">{info}</p> : null}
-        {(localError || error) ? (
+        {(localError || error || validationErrors) ? (
           <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded px-3 py-2">
-            {localError || error}
+            {validationErrors && validationErrors.length > 0 ? (
+              validationErrors.length === 1 ? (
+                validationErrors[0]
+              ) : (
+                <ul className="list-disc list-inside space-y-1">
+                  {validationErrors.map((errorMsg, index) => (
+                    <li key={index}>{errorMsg}</li>
+                  ))}
+                </ul>
+              )
+            ) : (
+              localError || error
+            )}
           </div>
         ) : null}
         <form onSubmit={onSubmit} className="space-y-3">
           {mode === 'sign-up' && (
             <div>
-              <label className="block text-xs text-gray-700 mb-1" htmlFor="username">Username</label>
+              <label className="block text-xs text-gray-700 mb-1" htmlFor="fullName">Full Name</label>
               <input
-                id="username"
-                name="username"
+                id="fullName"
+                name="fullName"
                 type="text"
                 required
-                value={form.username}
+                value={form.fullName}
                 onChange={onChange}
                 ref={firstFieldRef}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                placeholder="yourname"
-                autoComplete="username"
+                placeholder="John Doe"
+                autoComplete="name"
               />
             </div>
           )}
@@ -108,11 +145,27 @@ export default function AuthModal({ open, mode, info, onClose }) {
               autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
             />
           </div>
+          {mode === 'sign-up' && (
+            <div>
+              <label className="block text-xs text-gray-700 mb-1" htmlFor="passwordConfirm">Confirm Password</label>
+              <input
+                id="passwordConfirm"
+                name="passwordConfirm"
+                type="password"
+                required
+                value={form.passwordConfirm}
+                onChange={onChange}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              onClick={() => { setLocalError(''); onClose?.(); }}
+              onClick={() => { setLocalError(''); setValidationErrors(null); onClose?.(); }}
               className="px-3 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Cancel

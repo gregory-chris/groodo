@@ -17,10 +17,24 @@ async function request(path, options = {}) {
   const body = isJson ? await res.json().catch(() => null) : await res.text();
 
   if (!res.ok) {
-    const message = (body && (body.error || body.message)) || `HTTP ${res.status}`;
+    let message = `HTTP ${res.status}`;
+    let validationErrors = null;
+    
+    if (body) {
+      // Handle server validation errors format
+      if (body.validation_errors && Array.isArray(body.validation_errors)) {
+        validationErrors = body.validation_errors;
+        message = body.error || 'Validation failed';
+      } else {
+        // Fallback to generic error messages
+        message = body.error || body.message || message;
+      }
+    }
+    
     const error = new Error(message);
     error.status = res.status;
     error.body = body;
+    error.validationErrors = validationErrors;
     throw error;
   }
   return body;
@@ -37,10 +51,10 @@ export async function signIn({ email, password }) {
   return data;
 }
 
-export async function signUp({ email, password, username }) {
+export async function signUp({ email, password, fullName }) {
   const data = await request('/api/users/signup', {
     method: 'POST',
-    body: JSON.stringify({ email, password, username }),
+    body: JSON.stringify({ email, password, fullName }),
   });
   // Do not set token on sign-up; wait for email confirmation and sign-in
   return data;
