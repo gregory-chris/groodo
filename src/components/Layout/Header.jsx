@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { UserRound, LogOut, LogIn, UserPlus } from 'lucide-react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { UserRound, LogOut, LogIn, UserPlus, UserCheck } from 'lucide-react';
 import { useAuth } from '../../features/auth/AuthContext.jsx';
 import AuthModal from '../../features/auth/AuthModal.jsx';
 
@@ -9,10 +9,39 @@ import AuthModal from '../../features/auth/AuthModal.jsx';
  */
 function Header() {
   const { user, status, openAuthModal, performSignOut, modalState, setModalState, closeAuthModal } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const isLoading = status === 'loading';
   const isGuest = status === 'guest' || !user;
   const todayStr = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }), []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isDropdownOpen]);
+
+  const handleUserIconClick = () => {
+    if (isGuest) {
+      setModalState(s => ({ ...s, open: true, mode: 'sign-in' }));
+    } else {
+      setIsDropdownOpen(!isDropdownOpen);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await performSignOut();
+    setIsDropdownOpen(false);
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -66,17 +95,45 @@ function Header() {
               <span>{todayStr}</span>
             </div>
 
-            {/* Menu button for mobile */}
-            <div className="relative flex items-center">
-              {/* User menu */}
+            {/* User menu */}
+            <div className="relative flex items-center" ref={dropdownRef}>
               <button
                 type="button"
-                className="p-2 rounded-full text-gray-600 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className={`p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${
+                  isGuest 
+                    ? 'text-gray-600 hover:text-primary hover:bg-gray-100' 
+                    : 'bg-primary text-white hover:bg-primary/90'
+                }`}
                 aria-label="User menu"
-                onClick={() => setModalState(s => ({ ...s, open: true, mode: isGuest ? 'sign-in' : s.mode }))}
+                title={isGuest ? 'Sign in' : `Logged in as ${user?.email || 'User'}`}
+                onClick={handleUserIconClick}
               >
-                <UserRound className="w-6 h-6" />
+                {isGuest ? (
+                  <UserRound className="w-6 h-6" />
+                ) : (
+                  <UserCheck className="w-6 h-6" />
+                )}
               </button>
+
+              {/* Dropdown menu for authenticated users */}
+              {!isGuest && isDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <p className="text-xs text-gray-500 mb-1">Signed in as</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{user?.email}</p>
+                    {user?.fullName && (
+                      <p className="text-xs text-gray-600 mt-1">{user.fullName}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign out</span>
+                  </button>
+                </div>
+              )}
             </div>
           </nav>
         </div>
