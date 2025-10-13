@@ -45,14 +45,27 @@ export function AuthProvider({ children }) {
   const loadUser = useCallback(async () => {
     dispatch({ type: 'LOAD_START' });
     try {
-      if (!getToken()) {
+      const token = getToken();
+      console.log('loadUser - token:', token ? 'exists' : 'missing');
+      
+      if (!token) {
+        console.log('loadUser - no token, setting guest mode');
         dispatch({ type: 'LOAD_GUEST' });
         return;
       }
+      
       const me = await getMe();
-      if (me && me.id) dispatch({ type: 'LOAD_SUCCESS', payload: me });
-      else dispatch({ type: 'LOAD_GUEST' });
+      console.log('loadUser - profile response:', me);
+      
+      if (me && me.id) {
+        console.log('loadUser - dispatching LOAD_SUCCESS with user:', me);
+        dispatch({ type: 'LOAD_SUCCESS', payload: me });
+      } else {
+        console.log('loadUser - invalid profile response, setting guest mode');
+        dispatch({ type: 'LOAD_GUEST' });
+      }
     } catch (err) {
+      console.error('loadUser - error:', err);
       dispatch({ type: 'ERROR', payload: err?.message || 'Failed to load user' });
       dispatch({ type: 'LOAD_GUEST' });
     }
@@ -65,11 +78,28 @@ export function AuthProvider({ children }) {
   const performSignIn = useCallback(async (form) => {
     dispatch({ type: 'LOAD_START' });
     try {
-      await signIn(form);
-      await loadUser();
+      const signInResponse = await signIn(form);
+      console.log('Sign-in response:', signInResponse);
+      
+      // Extract user from sign-in response
+      const userData = signInResponse?.data?.user || signInResponse?.data || signInResponse?.user;
+      console.log('User data from sign-in:', userData);
+      
+      if (userData && userData.id) {
+        // Dispatch success with user data from sign-in response
+        console.log('Dispatching LOAD_SUCCESS with user:', userData);
+        dispatch({ type: 'LOAD_SUCCESS', payload: userData });
+      } else {
+        // Fallback: try to load user profile if not included in sign-in response
+        console.log('User not in sign-in response, calling loadUser()');
+        await loadUser();
+      }
+      
+      // Close modal after user is loaded
       closeAuthModal();
       return { ok: true };
     } catch (err) {
+      console.error('Sign-in error:', err);
       dispatch({ type: 'ERROR', payload: err?.message || 'Sign-in failed' });
       return { ok: false, error: err?.message, validationErrors: err?.validationErrors };
     }
