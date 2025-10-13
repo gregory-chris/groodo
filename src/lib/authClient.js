@@ -45,9 +45,17 @@ export async function signIn({ email, password }) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  if (data?.token) {
-    setCookie(TOKEN_COOKIE_NAME, data.token, SLIDING_SECONDS);
+  
+  // Handle both flat and nested response structures
+  const token = data?.data?.token || data?.token;
+  
+  if (token) {
+    console.log('Setting auth token cookie');
+    setCookie(TOKEN_COOKIE_NAME, token, SLIDING_SECONDS);
+  } else {
+    console.warn('No token in sign-in response:', data);
   }
+  
   return data;
 }
 
@@ -73,7 +81,9 @@ export async function getMe() {
   const data = await request('/api/users/profile', { method: 'GET' });
   // Sliding expiration on activity
   touchCookie(TOKEN_COOKIE_NAME, SLIDING_SECONDS);
-  return data;
+  
+  // Handle both flat and nested response structures
+  return data?.data || data;
 }
 
 export function getToken() {
