@@ -23,18 +23,25 @@ async function request(path, options = {}) {
 }
 
 export async function listTasks() {
-  const data = await request('/api/tasks', { method: 'GET' });
-  return Array.isArray(data) ? data : (data?.items || []);
+  const response = await request('/api/tasks', { method: 'GET' });
+  console.log('🔍 Raw API response:', response);
+  // Handle nested response structure: {result: "success", data: [...]}
+  const data = response?.data || response;
+  const tasks = Array.isArray(data) ? data : (data?.items || []);
+  console.log('📋 Extracted tasks:', tasks);
+  return tasks;
 }
 
 export async function createTask(task) {
-  const data = await request('/api/tasks', { method: 'POST', body: JSON.stringify(task) });
-  return data;
+  const response = await request('/api/tasks', { method: 'POST', body: JSON.stringify(task) });
+  // Handle nested response structure: {result: "success", data: {...}}
+  return response?.data || response;
 }
 
 export async function updateTask(taskId, updates) {
-  const data = await request(`/api/task/${encodeURIComponent(taskId)}`, { method: 'PATCH', body: JSON.stringify(updates) });
-  return data;
+  const response = await request(`/api/task/${encodeURIComponent(taskId)}`, { method: 'PATCH', body: JSON.stringify(updates) });
+  // Handle nested response structure: {result: "success", data: {...}}
+  return response?.data || response;
 }
 
 export async function deleteTask(taskId) {
