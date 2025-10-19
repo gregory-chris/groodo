@@ -53,14 +53,21 @@ export function usePersistence(state, dispatch) {
 
         // Upsert local tasks
         for (const t of tasks) {
+          // Transform task to API format
+          const apiTask = {
+            title: t.title || '',
+            description: t.content || '',
+            date: t.column || new Date().toISOString().split('T')[0],
+          };
+          
           if (remoteById.has(t.id)) {
             // Update if changed
             const r = remoteById.get(t.id);
             const changed = ['title','content','column','completed','order','createdAt']
               .some(k => (r?.[k] ?? null) !== (t?.[k] ?? null));
-            if (changed) await remoteTasks.updateTask(t.id, t);
+            if (changed) await remoteTasks.updateTask(t.id, apiTask);
           } else {
-            await remoteTasks.createTask(t);
+            await remoteTasks.createTask(apiTask);
           }
         }
 
@@ -98,13 +105,14 @@ export function usePersistence(state, dispatch) {
           tasks: Array.isArray(remote) ? remote.map((t, idx) => ({
             id: t.id,
             title: t.title ?? '',
-            content: t.content ?? '',
-            column: t.column ?? 'general',
+            content: t.description ?? '', // API uses 'description' field
+            date: t.date, // Preserve date from API
+            column: t.date || 'general', // Use date as column key (YYYY-MM-DD format)
             completed: !!t.completed,
             createdAt: t.createdAt ?? Date.now(),
             order: typeof t.order === 'number' ? t.order : idx,
           })) : [],
-          currentWeek: new Date(),
+          currentWeek: getCurrentWeek(),
         };
       } else {
         savedState = await loadState();
@@ -126,8 +134,15 @@ export function usePersistence(state, dispatch) {
             const remote = await remoteTasks.listTasks().catch(() => []);
             const remoteById = new Map(remote.map(t => [t.id, t]));
             for (const t of tasks) {
-              if (remoteById.has(t.id)) await remoteTasks.updateTask(t.id, t);
-              else await remoteTasks.createTask(t);
+              // Transform task to API format
+              const apiTask = {
+                title: t.title || '',
+                description: t.content || '',
+                date: t.column || new Date().toISOString().split('T')[0],
+              };
+              
+              if (remoteById.has(t.id)) await remoteTasks.updateTask(t.id, apiTask);
+              else await remoteTasks.createTask(apiTask);
             }
           } else {
             await saveState(migratedState);
