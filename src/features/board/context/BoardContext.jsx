@@ -211,44 +211,99 @@ export function BoardProvider({ children }) {
     }
   }, [state.currentWeek, persistence.isLoading]);
 
-  // Action creators
+  // Action creators with immediate persistence
   const addTask = useCallback((titleOrData, column, content = '') => {
     const taskData = typeof titleOrData === 'string' 
       ? { title: titleOrData, column, content }
       : titleOrData;
+    
+    // Generate temp ID
+    const tempId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newTask = { 
+      ...taskData, 
+      id: tempId,
+      completed: false,
+      createdAt: Date.now(),
+    };
+    
+    // Optimistic update
     dispatch({
       type: ACTIONS.ADD_TASK,
-      payload: taskData
+      payload: newTask
     });
-  }, []);
+    
+    // Async sync (fire and forget, rollback handled inside)
+    persistence.handleCreateTask(newTask, dispatch);
+  }, [persistence]);
 
   const updateTask = useCallback((taskId, updates) => {
+    // Store previous values for rollback
+    const previousTask = state.tasks.find(t => t.id === taskId);
+    
+    // Optimistic update
     dispatch({
       type: ACTIONS.UPDATE_TASK,
       payload: { taskId, updates }
     });
-  }, []);
+    
+    // Async sync with rollback
+    if (previousTask) {
+      persistence.handleUpdateTask(taskId, updates, previousTask, dispatch);
+    }
+  }, [persistence, state.tasks]);
 
   const deleteTask = useCallback((taskId) => {
+    // Store task for potential rollback
+    const taskToDelete = state.tasks.find(t => t.id === taskId);
+    
+    // Optimistic delete
     dispatch({
       type: ACTIONS.DELETE_TASK,
       payload: { taskId }
     });
-  }, []);
+    
+    // Async sync with rollback
+    if (taskToDelete) {
+      persistence.handleDeleteTask(taskId, taskToDelete, dispatch);
+    }
+  }, [persistence, state.tasks]);
 
   const toggleTaskComplete = useCallback((taskId) => {
+    // Store previous state for rollback
+    const previousTask = state.tasks.find(t => t.id === taskId);
+    
+    // Optimistic toggle
     dispatch({
       type: ACTIONS.TOGGLE_TASK_COMPLETE,
       payload: { taskId }
     });
-  }, []);
+    
+    // Async sync with rollback
+    if (previousTask) {
+      persistence.handleToggleComplete(taskId, previousTask, dispatch);
+    }
+  }, [persistence, state.tasks]);
 
   const moveTask = useCallback((taskId, targetColumn, targetOrder) => {
+    // Capture previous state of the moved task for rollback
+    const previousTask = state.tasks.find(t => t.id === taskId);
+    
+    // Optimistic move
     dispatch({
       type: ACTIONS.MOVE_TASK,
       payload: { taskId, targetColumn, targetOrder }
     });
-  }, []);
+    
+    // Async sync - update the moved task's column and order
+    if (previousTask) {
+      persistence.handleUpdateTask(
+        taskId, 
+        { column: targetColumn, order: targetOrder },
+        previousTask,
+        dispatch
+      );
+    }
+  }, [persistence, state.tasks]);
 
   const setCurrentWeek = useCallback((week) => {
     dispatch({
