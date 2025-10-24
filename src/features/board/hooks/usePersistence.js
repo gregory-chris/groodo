@@ -171,6 +171,37 @@ export function usePersistence(state, dispatch) {
   }, [client]);
 
   /**
+   * Handle bulk updating multiple tasks with parallel requests and rollback on failure
+   */
+  const handleBulkUpdateTasks = useCallback(async (taskUpdates, taskDispatch) => {
+    try {
+      // Send all PATCH requests in parallel
+      const updatePromises = taskUpdates.map(({ taskId, updates }) => 
+        client.updateTask(taskId, updates)
+      );
+      
+      await Promise.all(updatePromises);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to bulk update tasks:', error);
+      
+      // Rollback: restore all previous states
+      taskUpdates.forEach(({ taskId, previousTask }) => {
+        taskDispatch({ 
+          type: 'UPDATE_TASK', 
+          payload: { 
+            taskId, 
+            updates: previousTask 
+          }
+        });
+      });
+      
+      toast.error('Failed to update task order: ' + (error.message || 'Unknown error'));
+      return { success: false, error };
+    }
+  }, [client]);
+
+  /**
    * Export data for backup
    */
   const exportData = useCallback(() => {
@@ -263,5 +294,6 @@ export function usePersistence(state, dispatch) {
     handleUpdateTask,
     handleDeleteTask,
     handleToggleComplete,
+    handleBulkUpdateTasks,
   };
 }
