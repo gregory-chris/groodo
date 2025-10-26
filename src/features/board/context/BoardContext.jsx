@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
-import { saveState, loadState } from '../../../lib/storage.js';
+import PropTypes from 'prop-types';
 import { getCurrentWeek, getNextWeek, getPreviousWeek } from '../../../lib/date.js';
 import { usePersistence } from '../hooks/usePersistence.js';
 import TaskModal from '../components/TaskModal';
@@ -447,7 +447,12 @@ export function BoardProvider({ children }) {
   );
 }
 
-// Hook to use the board context
+BoardProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};
+
+// Hook to use the Board context
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBoardContext() {
   const context = useContext(BoardContext);
   
@@ -459,6 +464,7 @@ export function useBoardContext() {
 }
 
 // Helper functions for working with tasks
+// eslint-disable-next-line react-refresh/only-export-components
 export const boardHelpers = {
   /**
    * Get tasks for a specific column
@@ -496,7 +502,7 @@ export const boardHelpers = {
   /**
    * Get tasks for the current week
    */
-  getTasksForWeek: (tasks, week) => {
+  getTasksForWeek: (tasks) => {
     // For now, return all tasks - in future versions this could filter by date
     return tasks;
   }

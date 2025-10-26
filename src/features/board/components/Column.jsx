@@ -11,8 +11,17 @@ import TaskCard from './TaskCard';
  * Features drag and drop functionality and task management
  */
 function Column({ date, className = '', ...props }) {
-  const { state, addTask, deleteTask, toggleTaskComplete, updateTask, openTaskModal } = useBoardContext();
+  const { state, addTask, deleteTask, toggleTaskComplete, openTaskModal } = useBoardContext();
   const [newTaskTitle, setNewTaskTitle] = useState('');
+
+  // Get day name for drop zone ID - must be before any conditional returns
+  const columnKey = date instanceof Date && !isNaN(date.getTime()) ? getDateKey(date) : 'invalid';
+  const dropZoneId = columnKey;
+
+  // Set up drop zone functionality - must be called before any conditional returns
+  const { setNodeRef, isOver } = useDroppable({
+    id: dropZoneId,
+  });
 
   // Validate date prop
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
@@ -32,15 +41,6 @@ function Column({ date, className = '', ...props }) {
 
   // Check if this column represents today
   const isTodayColumn = isToday(date);
-  
-  // Get day name for drop zone ID
-  const columnKey = getDateKey(date);
-  const dropZoneId = columnKey;
-
-  // Set up drop zone functionality
-  const { setNodeRef, isOver } = useDroppable({
-    id: dropZoneId,
-  });
 
   // Get tasks for this column and sort by completion status, then by order
   // Incomplete tasks first, then completed tasks at the bottom
@@ -69,11 +69,6 @@ function Column({ date, className = '', ...props }) {
       });
       setNewTaskTitle('');
     }
-  };
-
-  // Open modal functions
-  const openCreateModal = () => {
-    openTaskModal('create', { column: columnKey });
   };
 
   const handleEditTask = (task) => {
