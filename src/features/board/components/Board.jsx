@@ -5,6 +5,7 @@ import DragProvider from './DragProvider';
 import WeekNav from './WeekNav';
 import Column from './Column';
 import TaskModal from './TaskModal';
+import LoadingBar from '../../../components/LoadingBar';
 import { useBoardContext } from '../context/BoardContext';
 import { getWeekDates } from '../../../lib/date';
 import { useAuth } from '../../auth/AuthContext.jsx';
@@ -15,7 +16,7 @@ import { UserRound, LogOut, LogIn, UserPlus } from 'lucide-react';
  * Main Board component that integrates all task management features
  */
 function BoardContent() {
-  const { state } = useBoardContext();
+  const { state, isLoading } = useBoardContext();
   const { user, status, openAuthModal, performSignOut, modalState, setModalState, closeAuthModal } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -46,6 +47,9 @@ function BoardContent() {
       flexDirection: 'column',
       backgroundColor: 'white'
     }}>
+      {/* Loading Bar */}
+      <LoadingBar isLoading={isLoading} />
+      
       {/* Skip link for accessibility */}
       <a 
         href="#main-content" 
