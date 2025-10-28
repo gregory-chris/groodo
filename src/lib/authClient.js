@@ -2,7 +2,7 @@ import { getAuthApiUrl } from './config.js';
 import { getCookie, setCookie, deleteCookie, touchCookie } from './cookies.js';
 
 const TOKEN_COOKIE_NAME = 'groodo_token';
-const SLIDING_SECONDS = 24 * 60 * 60; // 24h
+const SLIDING_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 async function request(path, options = {}) {
   const url = getAuthApiUrl(path);

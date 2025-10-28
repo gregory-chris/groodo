@@ -27,7 +27,7 @@ Evolve the app from a client-only, localStorage-based application to a full-stac
 - all the async operations must have proper in-progress indications. 
 - while during an async operation, disable the relevant buttons to avoid redundant requests and possible collisions.
 - create a dedicated and robust authentication client module
-- store the authentication tokens in a cookie with expiration of 24H, rather than on the localstorage. Every access to the authentication server extends the expiration of the token to 24h from the request moment.
+- store the authentication tokens in a cookie with expiration of 7 days, rather than on the localstorage. Every access to the authentication server extends the expiration of the token to 7 days from the request moment.
 
 ## tasks storage
 

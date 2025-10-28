@@ -1,5 +1,9 @@
 import { getAuthApiUrl } from './config.js';
 import { getToken } from './authClient.js';
+import { touchCookie } from './cookies.js';
+
+const TOKEN_COOKIE_NAME = 'groodo_token';
+const SLIDING_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 async function request(path, options = {}) {
   const url = getAuthApiUrl(path);
@@ -12,6 +16,12 @@ async function request(path, options = {}) {
   const res = await fetch(url, { ...options, headers, credentials: 'include' });
   const isJson = res.headers.get('content-type')?.includes('application/json');
   const body = isJson ? await res.json().catch(() => null) : await res.text();
+  
+  // Extend token expiration on successful API calls
+  if (res.ok && token) {
+    touchCookie(TOKEN_COOKIE_NAME, SLIDING_SECONDS);
+  }
+  
   if (!res.ok) {
     const message = (body && (body.error || body.message)) || `HTTP ${res.status}`;
     const error = new Error(message);

@@ -1,6 +1,6 @@
 // Minimal cookie utilities with sliding expiration for auth tokens
 
-const DEFAULT_MAX_AGE_SECONDS = 24 * 60 * 60; // 24h
+const DEFAULT_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export function setCookie(name, value, maxAgeSeconds = DEFAULT_MAX_AGE_SECONDS) {
   if (typeof document === 'undefined') return;
