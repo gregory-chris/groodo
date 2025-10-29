@@ -571,3 +571,134 @@ body {
     transform: scale(1) translateY(0);
   }
 }
+
+/* Workspace Switcher Styles */
+.workspace-switcher {
+  position: fixed;
+  left: 0;
+  top: calc(3.5rem + 1px); /* Position below header with 1px buffer */
+  width: 60px;
+  height: calc(100vh - 3.5rem - 1px); /* Full height minus header and buffer */
+  background: #FAFAFA;
+  border-right: 1px solid #E5E7EB;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center icons vertically */
+  align-items: center;
+}
+
+.workspace-switcher-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: center;
+}
+
+.workspace-switcher-item-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.workspace-switcher-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 200ms ease-in-out;
+  position: relative;
+  margin: 0.25rem 0;
+}
+
+.workspace-switcher-item:hover {
+  background: #F3F4F6;
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+.workspace-switcher-item:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(112, 30, 46, 0.1);
+}
+
+.workspace-switcher-item.active {
+  background: #701E2E;
+  color: white;
+  border-left: 3px solid #701E2E;
+}
+
+.workspace-switcher-item.active:hover {
+  background: #5A1A26;
+  color: white;
+}
+
+.workspace-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* Main content spacing for workspace switcher */
+.main-content-with-sidebar {
+  margin-left: 76px; /* 60px sidebar + 16px spacing */
+}
+
+/* Responsive main content wrapper */
+@media (max-width: 768px) {
+  .main-content-wrapper {
+    margin-left: 0 !important; /* Remove margin when sidebar is hidden on mobile */
+  }
+}
+
+/* Responsive behavior */
+@media (max-width: 1024px) {
+  .workspace-switcher {
+    width: 60px;
+  }
+  
+  .main-content-with-sidebar {
+    margin-left: 76px; /* Same spacing on tablet */
+  }
+}
+
+@media (max-width: 768px) {
+  .workspace-switcher {
+    top: calc(3.5rem + 1px); /* Still below header on mobile with buffer */
+    transform: translateX(-100%);
+    transition: transform 200ms ease-in-out;
+  }
+  
+  .workspace-switcher.mobile-open {
+    transform: translateX(0);
+  }
+  
+  /* Remove margin when sidebar is hidden */
+  .main-content-with-sidebar {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .workspace-switcher {
+    top: calc(3.5rem + 1px); /* Still below header on small mobile with buffer */
+    width: 100%;
+    max-width: 280px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .main-content-with-sidebar {
+    margin-left: 0;
+  }
+}

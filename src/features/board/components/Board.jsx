@@ -6,6 +6,7 @@ import WeekNav from './WeekNav';
 import Column from './Column';
 import TaskModal from './TaskModal';
 import LoadingBar from '../../../components/LoadingBar';
+import WorkspaceSwitcher from '../../../components/WorkspaceSwitcher';
 import { useBoardContext } from '../context/BoardContext';
 import { getWeekDates } from '../../../lib/date';
 import { useAuth } from '../../auth/AuthContext.jsx';
@@ -43,10 +44,16 @@ function BoardContent() {
   return (
     <div style={{ 
       height: '100vh', 
-      display: 'flex', 
+      display: 'flex',
       flexDirection: 'column',
       backgroundColor: 'white'
     }}>
+      {/* Workspace Switcher Sidebar */}
+      <WorkspaceSwitcher 
+        activeWorkspace="calendar" 
+        onWorkspaceChange={() => {}} 
+      />
+      
       {/* Loading Bar */}
       <LoadingBar isLoading={isLoading} />
       
@@ -57,7 +64,7 @@ function BoardContent() {
         style={{
           position: 'absolute',
           top: 0,
-          left: 0,
+          left: '76px', // Adjust for sidebar width + spacing
           backgroundColor: '#701E2E',
           color: 'white',
           padding: '0.5rem',
@@ -68,7 +75,7 @@ function BoardContent() {
         Skip to main content
       </a>
 
-      {/* Header with app title */}
+      {/* Header with app title - Full width */}
       <header className="header">
         <div className="header-content">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -155,15 +162,25 @@ function BoardContent() {
         </div>
       </header>
 
-      {/* Week Navigation */}
-      <div className="py-4 flex-shrink-0 w-full">
-        <div className="w-full px-6">
-          <WeekNav />
+      {/* Main content area with sidebar offset */}
+      <div 
+        className="main-content-wrapper"
+        style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          flex: 1,
+          marginLeft: '76px' // 60px sidebar + 16px spacing
+        }}
+      >
+        {/* Week Navigation */}
+        <div className="py-4 flex-shrink-0 w-full">
+          <div className="w-full px-6">
+            <WeekNav />
+          </div>
         </div>
-      </div>
 
-      {/* Main Content - Task Board */}
-      <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-hidden flex flex-col md:px-4 sm:px-3">
+        {/* Main Content - Task Board */}
+        <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-hidden flex flex-col md:px-4 sm:px-3">
         <h2 className="sr-only">Task Board</h2>
         
         {/* Task Columns */}
@@ -193,7 +210,8 @@ function BoardContent() {
             <p>Please check your week navigation or try refreshing the page.</p>
           </div>
         )}
-      </main>
+        </main>
+      </div>
 
       {/* Task Modal (controlled by BoardContext) */}
       <TaskModal />
