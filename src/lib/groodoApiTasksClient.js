@@ -58,4 +58,48 @@ export async function deleteTask(taskId) {
   await request(`/api/task/${encodeURIComponent(taskId)}`, { method: 'DELETE' });
 }
 
+// Project CRUD operations
+export async function listProjects() {
+  const response = await request('/api/projects', { method: 'GET' });
+  console.log('🔍 Raw projects API response:', response);
+  // Handle nested response structure: {result: "success", data: [...]}
+  const data = response?.data || response;
+  const projects = Array.isArray(data) ? data : (data?.items || []);
+  console.log('📋 Extracted projects:', projects);
+  return projects;
+}
+
+export async function createProject(project) {
+  const response = await request('/api/projects', { method: 'POST', body: JSON.stringify(project) });
+  // Handle nested response structure: {result: "success", data: {...}}
+  return response?.data || response;
+}
+
+export async function getProject(projectId) {
+  const response = await request(`/api/project/${encodeURIComponent(projectId)}`, { method: 'GET' });
+  // Handle nested response structure: {result: "success", data: {...}}
+  return response?.data || response;
+}
+
+export async function updateProject(projectId, updates) {
+  const response = await request(`/api/project/${encodeURIComponent(projectId)}`, { method: 'PUT', body: JSON.stringify(updates) });
+  // Handle nested response structure: {result: "success", data: {...}}
+  return response?.data || response;
+}
+
+export async function deleteProject(projectId) {
+  await request(`/api/project/${encodeURIComponent(projectId)}`, { method: 'DELETE' });
+}
+
+// Project-specific task operations
+export async function listProjectTasks(projectId) {
+  const response = await request(`/api/project/${encodeURIComponent(projectId)}/tasks`, { method: 'GET' });
+  console.log('🔍 Raw project tasks API response:', response);
+  // Handle nested response structure: {result: "success", data: [...]}
+  const data = response?.data || response;
+  const tasks = Array.isArray(data) ? data : (data?.items || []);
+  console.log('📋 Extracted project tasks:', tasks);
+  return tasks;
+}
+
 

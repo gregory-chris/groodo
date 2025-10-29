@@ -81,8 +81,8 @@ export class GroodoApiClient extends TaskStorageClient {
 
   /**
    * Transform task from API format to internal format
-   * API format: { id, title, description, date, order, completed, createdAt }
-   * Internal format: { id, title, content, column, order, completed, createdAt }
+   * API format: { id, title, description, date, order, completed, createdAt, projectId, parentId }
+   * Internal format: { id, title, content, column, order, completed, createdAt, projectId, parentId }
    * @private
    */
   _transformFromApi(apiTask) {
@@ -94,6 +94,8 @@ export class GroodoApiClient extends TaskStorageClient {
       order: typeof apiTask.order === 'number' ? apiTask.order : 0,
       completed: !!apiTask.completed,
       createdAt: apiTask.createdAt || Date.now(),
+      projectId: apiTask.projectId || null,
+      parentId: apiTask.parentId || null,
     };
   }
 
@@ -109,8 +111,146 @@ export class GroodoApiClient extends TaskStorageClient {
     if (task.column !== undefined) apiTask.date = task.column;
     if (task.order !== undefined) apiTask.order = task.order;
     if (task.completed !== undefined) apiTask.completed = task.completed;
+    if (task.projectId !== undefined) apiTask.projectId = task.projectId;
+    if (task.parentId !== undefined) apiTask.parentId = task.parentId;
     
     return apiTask;
+  }
+
+  // Project management methods
+
+  /**
+   * List all projects from Groodo API
+   * @returns {Promise<Array>} Array of project objects
+   */
+  async listProjects() {
+    try {
+      const projects = await groodoApi.listProjects();
+      
+      // Transform API format to internal format
+      return projects.map(project => this._transformProjectFromApi(project));
+    } catch (error) {
+      console.error('Failed to load projects from Groodo API:', error);
+      throw new Error(error.message || 'Failed to load projects from server');
+    }
+  }
+
+  /**
+   * Create a new project in Groodo API
+   * @param {Object} project - Project object to create
+   * @returns {Promise<Object>} Created project with server ID
+   */
+  async createProject(project) {
+    try {
+      // Transform to API format
+      const apiProject = this._transformProjectToApi(project);
+      
+      // Send to server
+      const createdProject = await groodoApi.createProject(apiProject);
+      
+      // Transform back to internal format
+      return this._transformProjectFromApi(createdProject);
+    } catch (error) {
+      console.error('Failed to create project on Groodo API:', error);
+      throw new Error(error.message || 'Failed to create project on server');
+    }
+  }
+
+  /**
+   * Get a specific project from Groodo API
+   * @param {string|number} projectId - ID of project to fetch
+   * @returns {Promise<Object>} Project object
+   */
+  async getProject(projectId) {
+    try {
+      const project = await groodoApi.getProject(projectId);
+      
+      // Transform API format to internal format
+      return this._transformProjectFromApi(project);
+    } catch (error) {
+      console.error('Failed to load project from Groodo API:', error);
+      throw new Error(error.message || 'Failed to load project from server');
+    }
+  }
+
+  /**
+   * Update an existing project in Groodo API
+   * @param {string|number} projectId - ID of project to update
+   * @param {Object} updates - Fields to update
+   * @returns {Promise<Object>} Updated project object
+   */
+  async updateProject(projectId, updates) {
+    try {
+      // Transform to API format
+      const apiUpdates = this._transformProjectToApi(updates);
+      
+      // Send to server
+      const updatedProject = await groodoApi.updateProject(projectId, apiUpdates);
+      
+      // Transform back to internal format
+      return this._transformProjectFromApi(updatedProject);
+    } catch (error) {
+      console.error('Failed to update project on Groodo API:', error);
+      throw new Error(error.message || 'Failed to update project on server');
+    }
+  }
+
+  /**
+   * Delete a project from Groodo API
+   * @param {string|number} projectId - ID of project to delete
+   * @returns {Promise<void>}
+   */
+  async deleteProject(projectId) {
+    try {
+      await groodoApi.deleteProject(projectId);
+    } catch (error) {
+      console.error('Failed to delete project from Groodo API:', error);
+      throw new Error(error.message || 'Failed to delete project from server');
+    }
+  }
+
+  /**
+   * List all tasks for a specific project from Groodo API
+   * @param {string|number} projectId - ID of project to fetch tasks for
+   * @returns {Promise<Array>} Array of task objects
+   */
+  async listProjectTasks(projectId) {
+    try {
+      const tasks = await groodoApi.listProjectTasks(projectId);
+      
+      // Transform API format to internal format
+      return tasks.map(task => this._transformFromApi(task));
+    } catch (error) {
+      console.error('Failed to load project tasks from Groodo API:', error);
+      throw new Error(error.message || 'Failed to load project tasks from server');
+    }
+  }
+
+  /**
+   * Transform project from API format to internal format
+   * @private
+   */
+  _transformProjectFromApi(apiProject) {
+    return {
+      id: apiProject.id,
+      name: apiProject.name || '',
+      description: apiProject.description || '',
+      createdAt: apiProject.createdAt || Date.now(),
+      updatedAt: apiProject.updatedAt || Date.now(),
+    };
+  }
+
+  /**
+   * Transform project from internal format to API format
+   * @private
+   */
+  _transformProjectToApi(project) {
+    const apiProject = {};
+    
+    if (project.name !== undefined) apiProject.name = project.name;
+    if (project.description !== undefined) apiProject.description = project.description;
+    
+    return apiProject;
   }
 }
 
