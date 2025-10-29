@@ -643,6 +643,19 @@ body {
   color: white;
 }
 
+.workspace-switcher-item.clicked {
+  transform: translateY(-1px) scale(0.95);
+  background: #F3F4F6;
+  color: #374151;
+  transition: all 150ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.workspace-switcher-item.active.clicked {
+  background: #5A1A26;
+  color: white;
+  transform: translateY(-1px) scale(0.95);
+}
+
 .workspace-icon {
   width: 24px;
   height: 24px;
@@ -658,6 +671,126 @@ body {
 @media (max-width: 768px) {
   .main-content-wrapper {
     margin-left: 0 !important; /* Remove margin when sidebar is hidden on mobile */
+  }
+}
+
+/* Workspace Main Container - Only this area animates */
+.workspace-main-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 3.5rem); /* Full height minus header */
+  overflow: hidden;
+  will-change: transform;
+  flex: 1;
+}
+
+.workspace-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 3.5rem); /* Full height minus header */
+  transition: transform 600ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.workspace-slide.active {
+  z-index: 10;
+}
+
+/* Workspace Empty State Styles */
+.workspace-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 3.5rem); /* Full height minus header */
+  padding: 2rem;
+  text-align: center;
+  background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
+}
+
+.workspace-icon-container {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #701E2E 0%, #BB1E3A 100%);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(112, 30, 46, 0.2);
+  animation: workspace-icon-float 3s ease-in-out infinite;
+}
+
+.workspace-large-icon {
+  width: 4rem;
+  height: 4rem;
+  color: white;
+}
+
+.workspace-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #701E2E;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+}
+
+.workspace-description {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 3rem;
+  max-width: 32rem;
+  line-height: 1.6;
+}
+
+.workspace-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 24rem;
+  width: 100%;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #CF904E;
+}
+
+.feature-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: linear-gradient(135deg, #CF904E 0%, #BB1E3A 100%);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.feature-item span {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Floating animation for workspace icons */
+@keyframes workspace-icon-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }
 

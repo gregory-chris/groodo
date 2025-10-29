@@ -1,41 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar, FolderKanban, FileText } from 'lucide-react';
+import { useWorkspace, WORKSPACE_TYPES } from '../context/WorkspaceContext';
 
 /**
  * WorkspaceSwitcher - A persistent left sidebar for navigation between workspace modes
- * 
- * @param {Object} props
- * @param {string} props.activeWorkspace - Currently active workspace ('calendar' | 'projects' | 'notes')
- * @param {Function} props.onWorkspaceChange - Callback when workspace is changed
+ * Now connected to WorkspaceContext for state management
  */
-function WorkspaceSwitcher({ activeWorkspace = 'calendar', onWorkspaceChange = () => {} }) {
+function WorkspaceSwitcher() {
+  const { activeWorkspace, switchWorkspace } = useWorkspace();
+  const [clickedWorkspace, setClickedWorkspace] = useState(null);
   const workspaces = [
     {
-      id: 'calendar',
+      id: WORKSPACE_TYPES.CALENDAR,
       label: 'Calendar view',
       title: 'Calendar',
       icon: Calendar,
-      isActive: activeWorkspace === 'calendar'
+      isActive: activeWorkspace === WORKSPACE_TYPES.CALENDAR
     },
     {
-      id: 'projects',
+      id: WORKSPACE_TYPES.PROJECTS,
       label: 'Projects view',
       title: 'Projects',
       icon: FolderKanban,
-      isActive: activeWorkspace === 'projects'
+      isActive: activeWorkspace === WORKSPACE_TYPES.PROJECTS
     },
     {
-      id: 'notes',
+      id: WORKSPACE_TYPES.NOTES,
       label: 'Notes view',
       title: 'Notes',
       icon: FileText,
-      isActive: activeWorkspace === 'notes'
+      isActive: activeWorkspace === WORKSPACE_TYPES.NOTES
     }
   ];
 
   const handleWorkspaceClick = (workspaceId) => {
     if (workspaceId !== activeWorkspace) {
-      onWorkspaceChange(workspaceId);
+      // Add visual feedback
+      setClickedWorkspace(workspaceId);
+      setTimeout(() => setClickedWorkspace(null), 150);
+      
+      // Switch workspace
+      switchWorkspace(workspaceId);
     }
   };
 
@@ -58,7 +63,7 @@ function WorkspaceSwitcher({ activeWorkspace = 'calendar', onWorkspaceChange = (
           return (
             <li key={workspace.id} className="workspace-switcher-item-wrapper">
               <button
-                className={`workspace-switcher-item ${workspace.isActive ? 'active' : ''}`}
+                className={`workspace-switcher-item ${workspace.isActive ? 'active' : ''} ${clickedWorkspace === workspace.id ? 'clicked' : ''}`}
                 aria-label={workspace.label}
                 aria-current={workspace.isActive ? 'page' : 'false'}
                 title={workspace.title}

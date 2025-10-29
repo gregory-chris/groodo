@@ -1,8 +1,13 @@
 import React from 'react';
-import Board from './features/board/components/Board';
+import { WorkspaceProvider } from './context/WorkspaceContext';
+import WorkspaceContainer from './components/WorkspaceContainer';
 
 function App() {
-  return <Board />;
+  return (
+    <WorkspaceProvider>
+      <WorkspaceContainer />
+    </WorkspaceProvider>
+  );
 }
 
 export default App;
