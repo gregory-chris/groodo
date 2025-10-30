@@ -285,49 +285,59 @@ export function BoardProvider({ children }) {
   }, [persistence, state.tasks]);
 
   const moveTask = useCallback((taskId, targetColumn, targetOrder) => {
-    // Get the task being moved
-    const movingTask = state.tasks.find(t => t.id === taskId);
-    if (!movingTask) return;
-    
-    // Simulate the move to calculate which tasks will be affected
-    // This mirrors the logic from the MOVE_TASK reducer
-    const targetColumnTasks = state.tasks.filter(
-      task => task.column === targetColumn && task.id !== taskId
-    );
-    
-    // Sort target column tasks by order
-    targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
-    
-    // Insert the moving task at the target position
-    targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
-    
-    // Reassign order values to all tasks in the target column
-    const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
-      ...task,
-      order: index
-    }));
-    
-    // Identify which tasks have changed and need to be synced
-    const affectedTasks = [];
-    
-    reorderedTargetTasks.forEach(newTask => {
-      const originalTask = state.tasks.find(t => t.id === newTask.id);
-      if (originalTask) {
-        const orderChanged = originalTask.order !== newTask.order;
-        const columnChanged = originalTask.column !== newTask.column;
-        
-        if (orderChanged || columnChanged) {
-          affectedTasks.push({
-            taskId: newTask.id,
-            updates: {
-              column: newTask.column,
-              order: newTask.order
-            },
-            previousTask: { ...originalTask }
-          });
+    // Helper function to calculate affected tasks from current state
+    // This uses functional composition to ensure we're working with fresh data
+    const calculateAffectedTasks = (currentTasks) => {
+      // Get the task being moved
+      const movingTask = currentTasks.find(t => t.id === taskId);
+      if (!movingTask) return null;
+      
+      // Simulate the move to calculate which tasks will be affected
+      // This mirrors the logic from the MOVE_TASK reducer
+      const targetColumnTasks = currentTasks.filter(
+        task => task.column === targetColumn && task.id !== taskId
+      );
+      
+      // Sort target column tasks by order
+      targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      // Insert the moving task at the target position
+      targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
+      
+      // Reassign order values to all tasks in the target column
+      const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
+        ...task,
+        order: index
+      }));
+      
+      // Identify which tasks have changed and need to be synced
+      const affectedTasks = [];
+      
+      reorderedTargetTasks.forEach(newTask => {
+        const originalTask = currentTasks.find(t => t.id === newTask.id);
+        if (originalTask) {
+          const orderChanged = originalTask.order !== newTask.order;
+          const columnChanged = originalTask.column !== newTask.column;
+          
+          if (orderChanged || columnChanged) {
+            affectedTasks.push({
+              taskId: newTask.id,
+              updates: {
+                column: newTask.column,
+                order: newTask.order
+              },
+              previousTask: { ...originalTask }
+            });
+          }
         }
-      }
-    });
+      });
+      
+      return affectedTasks;
+    };
+
+    // Calculate affected tasks using current state at call time
+    const affectedTasks = calculateAffectedTasks(state.tasks);
+    if (!affectedTasks) return;
     
     // Optimistic move
     dispatch({
