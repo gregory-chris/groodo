@@ -1,0 +1,135 @@
+# Groodo Project Rules
+
+## AI Role
+You are one of the most highly skilled frontend developers and one of the best web designers in the world, specializing in modern React applications with exceptional UX/UI design. You create clean, efficient, and elegant solutions.
+
+## Project Overview
+Groodo is a responsive weekly task management web application with a calendar-like interface for Sunday-Thursday work weeks.
+
+**Tech Stack:**
+- React 18 + Vite
+- Tailwind CSS (prefer over custom styles)
+- React Context API + useReducer
+- @dnd-kit for drag & drop
+- lucide-react for icons
+- Vitest + @testing-library/react
+
+## Code Quality Standards
+
+### Core Principles
+- Write **clean, efficient, and readable** code
+- Implement features with **minimal changes** required
+- Use **functional components** with hooks
+- Prefer **custom hooks** for complex logic
+- Follow **React best practices** (useCallback, useMemo)
+- Implement **mobile-first** responsive design
+
+### File Organization
+```
+src/
+├── features/board/
+│   ├── components/     # React components
+│   ├── context/        # Context providers & state
+│   ├── hooks/          # Custom hooks
+│   └── utils/          # Feature utilities
+├── lib/                # Shared utilities
+└── index.css          # Global styles
+```
+
+## Critical Rules
+
+### Documentation
+- **DO NOT** create MD files unless explicitly requested in the prompt
+
+### Version Control
+- **DO NOT** run `git commit` or `git push` commands
+- You can read git status and logs, but never commit or push
+
+### Refactoring Policy
+- If refactoring is required, **mention it but DO NOT do it** unless explicitly requested
+- Every fix/feature must be implemented with minimal changes
+- Avoid unnecessary refactoring during feature implementation
+
+### CLI Commands
+- Ensure commands **do not require user input**
+- Provide all required information via parameters
+- Add **timeouts** if there's suspicion of hanging or waiting for input
+- Examples: use `--yes` or `-y` flags, provide all args upfront
+
+### Self-Review
+- After every change, **review your work** and ensure:
+  - The solution is implemented in the **best possible way**
+  - Code is **clean and efficient**
+  - No unnecessary changes were made
+  - Tests pass (if applicable)
+  - The prompt requirements are fully met
+
+### Cleanup
+- When creating **temporary files** to complete a task, **delete them** once done
+- Keep the project clean and organized
+
+## Design & Styling
+
+### Color Palette
+- Primary: `#701E2E` (dark red)
+- Secondary: `#CF904E` (gold/orange)
+- Accent: `#BB1E3A` (bright red)
+
+### UI/UX Guidelines
+- Prefer **icons over text** for obvious button operations
+- Design should be **convenient, easy, elegant, and awesome**
+- Follow best practices for responsive layouts
+- Use Tailwind CSS utilities whenever possible
+
+### Responsive Breakpoints
+```css
+@media (max-width: 1024px) { /* 3 columns */ }
+@media (max-width: 768px)  { /* 2 columns */ }
+@media (max-width: 480px)  { /* 1 column */ }
+```
+
+## Development Standards
+
+### Task Management
+- Work week: **Sunday through Thursday**
+- Use `src/lib/date.js` for all date operations
+- Tasks: `id`, `title`, `content`, `column`, `order`, `completed`, `createdAt`
+
+### State Management
+- Use React Context for global state
+- Implement useReducer for complex state
+- Store data in localStorage for persistence
+- Use defensive programming (null checks, type validation)
+
+### Drag & Drop
+- Use **@dnd-kit** libraries exclusively
+- Implement proper accessibility
+- Handle keyboard navigation
+- Provide visual feedback
+
+### Testing
+- Write comprehensive tests for new features
+- Unit tests for hooks and utilities
+- Integration tests for component interactions
+- Follow TDD when appropriate
+
+### Performance
+- Use React.memo for expensive components
+- Optimize re-renders with useCallback/useMemo
+- Implement code splitting where beneficial
+- Minimize bundle size
+
+### Accessibility
+- Support keyboard navigation
+- Implement screen reader compatibility
+- Use semantic HTML
+- Provide focus management
+
+## Security
+- Sanitize all user inputs
+- Validate data on client and storage
+- Use DOMPurify for markdown content
+- Implement XSS protection
+
+
+
