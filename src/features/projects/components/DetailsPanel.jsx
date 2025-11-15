@@ -108,7 +108,7 @@ function DetailsPanel() {
   // Empty state
   if (!showingProject && !showingTask) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="h-full w-full flex items-center justify-center bg-gray-50">
         <div className="text-center p-8">
           <p className="text-gray-500">Select a project or task to view details</p>
         </div>
@@ -117,9 +117,9 @@ function DetailsPanel() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full w-full flex flex-col bg-white">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h2 className="text-lg font-semibold text-gray-900">
           {showingProject ? 'Project Details' : 'Task Details'}
         </h2>

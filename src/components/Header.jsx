@@ -136,13 +136,12 @@ function Header({ isLoading = false, subtitle = 'Task Management' }) {
       </header>
 
       {/* Auth Modal */}
-      {modalState.open && (
-        <AuthModal
-          mode={modalState.mode}
-          onClose={closeAuthModal}
-          onSwitch={(newMode) => setModalState({ open: true, mode: newMode })}
-        />
-      )}
+      <AuthModal
+        open={modalState.open}
+        mode={modalState.mode}
+        info={modalState.info}
+        onClose={closeAuthModal}
+      />
     </>
   );
 }

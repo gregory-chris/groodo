@@ -242,14 +242,14 @@ function TasksPanel() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+    <div className="h-full w-full flex flex-col bg-white border-r border-gray-200">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h2 className="text-lg font-semibold text-gray-900">Tasks</h2>
       </div>
 
       {/* Add Task Input */}
-      <div className="p-3 border-b border-gray-200 bg-gray-50">
+      <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
         <input
           type="text"
           value={newTaskTitle}
