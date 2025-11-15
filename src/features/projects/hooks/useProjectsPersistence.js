@@ -43,16 +43,36 @@ export function useProjectsPersistence(state, dispatch) {
       const tasks = await tasksClient.listTasks();
       
       // Load last selected project and task from localStorage
-      const selectedProjectId = localStorage.getItem('groodo_selected_project');
-      const selectedTaskId = localStorage.getItem('groodo_selected_task');
+      const savedProjectId = localStorage.getItem('groodo_selected_project');
+      const savedTaskId = localStorage.getItem('groodo_selected_task');
+      
+      // Validate that the saved project still exists
+      let selectedProjectId = null;
+      if (savedProjectId && projects.some(p => p.id === savedProjectId)) {
+        selectedProjectId = savedProjectId;
+      } else if (projects.length > 0) {
+        // Select first project if saved one doesn't exist
+        selectedProjectId = projects[0].id;
+      }
+      
+      // Validate that the saved task still exists and belongs to the selected project
+      let selectedTaskId = null;
+      if (savedTaskId && selectedProjectId) {
+        const taskExists = tasks.some(t => 
+          t.id === savedTaskId && t.projectId === selectedProjectId
+        );
+        if (taskExists) {
+          selectedTaskId = savedTaskId;
+        }
+      }
       
       dispatch({ 
         type: 'LOAD_STATE', 
         payload: { 
           projects,
           tasks,
-          selectedProjectId: selectedProjectId || (projects.length > 0 ? projects[0].id : null),
-          selectedTaskId: selectedTaskId || null,
+          selectedProjectId,
+          selectedTaskId,
         }
       });
     } catch (err) {
