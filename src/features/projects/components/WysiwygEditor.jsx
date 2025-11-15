@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -16,31 +16,46 @@ import {
   Code
 } from 'lucide-react';
 
+// Create extensions once outside the component to prevent re-creation
+const extensions = [
+  StarterKit.configure({
+    heading: {
+      levels: [1, 2, 3],
+    },
+  }),
+  Underline,
+];
+
 /**
  * WysiwygEditor - Reusable WYSIWYG editor component using TipTap
  * Simple toolbar with headings, basic formatting, lists, indentation, and code
  */
 function WysiwygEditor({ value, onChange, placeholder, id }) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  const editor = useEditor(
+    {
+      extensions,
+      content: value || '',
+      onUpdate: ({ editor }) => {
+        const html = editor.getHTML();
+        if (onChangeRef.current) {
+          onChangeRef.current(html);
+        }
+      },
+      editorProps: {
+        attributes: {
+          class: 'wysiwyg-editor-content',
+          'data-placeholder': placeholder,
         },
-      }),
-      Underline,
-    ],
-    content: value || '',
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-    editorProps: {
-      attributes: {
-        class: 'wysiwyg-editor-content',
-        'data-placeholder': placeholder,
       },
     },
-  });
+    [] // Ensure editor initializes only once
+  );
 
   // Sync editor content when value prop changes (e.g., switching between tasks/projects)
   useEffect(() => {
