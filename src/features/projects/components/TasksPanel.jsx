@@ -75,7 +75,7 @@ function TaskItem({ task, level = 0, allTasks }) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    paddingLeft: `${level * 24 + 12}px`,
+    paddingLeft: `${level * 16 + 8}px`,
   };
 
   return (
@@ -84,7 +84,7 @@ function TaskItem({ task, level = 0, allTasks }) {
       <div
         ref={setNodeRef}
         style={style}
-        className={`group flex items-center gap-2 py-2 px-3 hover:bg-gray-50 border-l-2 ${
+        className={`group flex items-center gap-1 py-1.5 pr-3 hover:bg-gray-50 border-l-2 ${
           isSelected ? 'bg-[#701E2E]/5 border-[#701E2E]' : 'border-transparent'
         } ${isDragging ? 'z-50' : ''}`}
       >
@@ -92,11 +92,12 @@ function TaskItem({ task, level = 0, allTasks }) {
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity"
+          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity cursor-grab active:cursor-grabbing"
           aria-label="Drag to reorder"
         >
-          <GripVertical className="w-4 h-4 text-gray-400" />
+          <GripVertical className="w-3 h-3 text-gray-400" />
         </button>
+        
         {/* Expand/Collapse Button */}
         {hasSubTasks ? (
           <button
@@ -105,13 +106,13 @@ function TaskItem({ task, level = 0, allTasks }) {
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-600" />
+              <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-gray-600" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
             )}
           </button>
         ) : (
-          <span className="w-5"></span>
+          <span className="w-4"></span>
         )}
 
         {/* Checkbox */}
@@ -125,16 +126,16 @@ function TaskItem({ task, level = 0, allTasks }) {
           title={!canComplete && !task.completed ? 'Complete all sub-tasks first' : ''}
         >
           {task.completed ? (
-            <CheckSquare className="w-5 h-5 text-[#701E2E]" />
+            <CheckSquare className="w-4 h-4 text-[#701E2E]" />
           ) : (
-            <Square className="w-5 h-5 text-gray-400" />
+            <Square className="w-4 h-4 text-gray-400" />
           )}
         </button>
 
         {/* Task Title */}
         <button
           onClick={() => selectTask(task.id)}
-          className={`flex-1 text-left text-sm ${
+          className={`flex-1 text-left text-sm min-w-0 ${
             task.completed ? 'text-gray-400 line-through' : 'text-gray-900'
           }`}
         >
@@ -145,11 +146,11 @@ function TaskItem({ task, level = 0, allTasks }) {
         {canAddSub && (
           <button
             onClick={() => setIsAddingSubTask(true)}
-            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity"
+            className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity"
             title="Add sub-task"
             aria-label="Add sub-task"
           >
-            <Plus className="w-4 h-4 text-gray-600" />
+            <Plus className="w-3.5 h-3.5 text-gray-600" />
           </button>
         )}
       </div>
@@ -157,8 +158,8 @@ function TaskItem({ task, level = 0, allTasks }) {
       {/* Add Sub-Task Input */}
       {isAddingSubTask && (
         <div
-          className="py-1 px-3"
-          style={{ paddingLeft: `${(level + 1) * 24 + 12}px` }}
+          className="py-1 pr-3"
+          style={{ paddingLeft: `${(level + 1) * 16 + 8}px` }}
         >
           <input
             type="text"
