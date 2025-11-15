@@ -81,8 +81,8 @@ export class GroodoApiClient extends TaskStorageClient {
 
   /**
    * Transform task from API format to internal format
-   * API format: { id, title, description, date, order, completed, createdAt }
-   * Internal format: { id, title, content, column, order, completed, createdAt }
+   * API format: { id, title, description, date, order, completed, createdAt, projectId, parentId }
+   * Internal format: { id, title, content, column, order, completed, createdAt, projectId, parentId }
    * @private
    */
   _transformFromApi(apiTask) {
@@ -94,6 +94,8 @@ export class GroodoApiClient extends TaskStorageClient {
       order: typeof apiTask.order === 'number' ? apiTask.order : 0,
       completed: !!apiTask.completed,
       createdAt: apiTask.createdAt || Date.now(),
+      projectId: apiTask.projectId || null,
+      parentId: apiTask.parentId || null,
     };
   }
 
@@ -109,6 +111,8 @@ export class GroodoApiClient extends TaskStorageClient {
     if (task.column !== undefined) apiTask.date = task.column;
     if (task.order !== undefined) apiTask.order = task.order;
     if (task.completed !== undefined) apiTask.completed = task.completed;
+    if (task.projectId !== undefined) apiTask.projectId = task.projectId;
+    if (task.parentId !== undefined) apiTask.parentId = task.parentId;
     
     return apiTask;
   }

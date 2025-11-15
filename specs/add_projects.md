@@ -100,3 +100,211 @@ The full documentation of the API is [here](https://github.com/gregory-chris/gro
 Fetch the documentation and update the client SDKs and the parts in the code that are responsible for syncing with the server
 
 
+#### API models
+
+Endpoint: POST /api/projects
+Authentication: Required
+
+Request Body
+```JSON
+{
+  "name": "Website Redesign",
+  "description": "Complete redesign of company website",
+  "url": "https://example.com/project",
+  "githubUrl": "https://github.com/user/project",
+  "color": "#FF5733",
+  "customFields": {
+    "priority": "high",
+    "status": "active",
+    "team": "frontend"
+  }
+}
+```
+
+Response (201 Created)
+```JSON
+{
+  "result": "success",
+  "data": {
+    "id": 5,
+    "userId": 1,
+    "name": "Website Redesign",
+    "description": "Complete redesign of company website",
+    "url": "https://example.com/project",
+    "githubUrl": "https://github.com/user/project",
+    "color": "#FF5733",
+    "customFields": {
+      "priority": "high",
+      "status": "active",
+      "team": "frontend"
+    },
+    "createdAt": "2025-09-01T08:00:00+00:00",
+    "updatedAt": "2025-09-01T08:00:00+00:00"
+  }
+}
+```
+
+====
+
+Get Single Project
+Retrieve a specific project by ID (must belong to authenticated user).
+
+Endpoint: GET /api/project/{projectId}
+
+Response (200 OK)
+```JSON
+{
+  "result": "success",
+  "data": {
+    "id": 5,
+    "userId": 1,
+    "name": "Website Redesign",
+    "description": "Complete redesign of company website",
+    "url": "https://example.com/project",
+    "githubUrl": "https://github.com/user/project",
+    "color": "#FF5733",
+    "customFields": {
+      "priority": "high",
+      "status": "active",
+      "team": "frontend"
+    },
+    "createdAt": "2025-09-01T08:00:00+00:00",
+    "updatedAt": "2025-09-28T08:00:00+00:00"
+  }
+}
+```
+
+====
+
+Update Project
+Update an existing project (must belong to authenticated user). Supports both full (PUT) and partial (PATCH) updates.
+
+Endpoint: PUT /api/project/{projectId} or PATCH /api/project/{projectId}
+Authentication: Required
+
+Path Parameters
+projectId: Integer ID of the project
+Request Body (PUT - Full Update)
+```JSON
+{
+  "name": "Updated Project Name",
+  "description": "Updated description",
+  "url": "https://example.com/updated",
+  "githubUrl": "https://github.com/user/updated",
+  "color": "#00FF00",
+  "customFields": {
+    "priority": "low",
+    "status": "completed"
+  }
+}
+```
+
+====
+
+Delete Project
+Delete a project (must belong to authenticated user). All tasks associated with the project will be automatically unassigned (cascade behavior).
+
+Endpoint: DELETE /api/project/{projectId}
+Authentication: Required
+
+Path Parameters
+projectId: Integer ID of the project
+Response (200 OK)
+```JSON
+{
+  "result": "success",
+  "data": {
+    "message": "Project deleted successfully",
+    "deletedProject": {
+      "id": 5,
+      "name": "Website Redesign"
+    }
+  }
+}
+```
+
+====
+
+Get Project Tasks
+Retrieve all tasks associated with a specific project.
+
+Endpoint: GET /api/project/{projectId}/tasks
+Authentication: Required
+
+Path Parameters
+projectId: Integer ID of the project
+Query Parameters
+limit (optional): Number of tasks to return (default: 100, max: 100)
+offset (optional): Number of tasks to skip (default: 0)
+Example Request
+GET /api/project/5/tasks?limit=20&offset=0
+
+
+Response (200 OK)
+```JSON
+{
+  "result": "success",
+  "data": [
+    {
+      "id": 1,
+      "userId": 1,
+      "title": "Design homepage",
+      "description": "Create new homepage design",
+      "date": "2025-09-28",
+      "order": 1,
+      "completed": false,
+      "projectId": 5,
+      "parentId": null,
+      "createdAt": "2025-09-28T08:00:00+00:00",
+      "updatedAt": "2025-09-28T08:00:00+00:00"
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "title": "Implement responsive layout",
+      "description": "Make design responsive",
+      "date": "2025-09-29",
+      "order": 1,
+      "completed": false,
+      "projectId": 5,
+      "parentId": 1,
+      "createdAt": "2025-09-28T08:00:00+00:00",
+      "updatedAt": "2025-09-28T08:00:00+00:00"
+    }
+  ]
+}
+```
+
+#### Tasks API modifications
+
+List Tasks
+Retrieve tasks for the authenticated user with optional filtering and pagination.
+
+Endpoint: GET /api/tasks
+
+```JSON
+{
+  "result": "success",
+  "data": [
+    {
+      "id": 1,
+      "userId": 1,
+      "title": "Complete project documentation",
+      "description": "Write comprehensive API documentation",
+      "date": "2025-09-28",
+      "order": 1,
+      "completed": false,
+      "projectId": 5,
+      "parentId": null,
+      "createdAt": "2025-09-28T08:00:00+00:00",
+      "updatedAt": "2025-09-28T08:00:00+00:00"
+    }
+  ]
+}
+```
+
+Note the "projectId" and "parentId" properties
+
+====
+
+

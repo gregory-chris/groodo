@@ -44,8 +44,9 @@ function Column({ date, className = '', ...props }) {
 
   // Get tasks for this column and sort by completion status, then by order
   // Incomplete tasks first, then completed tasks at the bottom
+  // Filter out tasks that belong to projects (projectId !== null)
   const tasks = state.tasks
-    .filter(task => task.column === columnKey)
+    .filter(task => task.column === columnKey && !task.projectId)
     .sort((a, b) => {
       // If completion status is different, incomplete tasks come first
       if (a.completed !== b.completed) {
