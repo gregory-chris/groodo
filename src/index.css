@@ -641,7 +641,7 @@ body {
   padding: 0.75rem;
   color: #374151;
   line-height: 1.6;
-  font-size: 0.875rem;
+  font-size: 1rem;
   outline: none;
 }
 
@@ -655,7 +655,7 @@ body {
 
 /* Styled content in editor */
 .wysiwyg-editor-content h1 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #111827;
   margin-top: 0.5rem;
@@ -664,7 +664,7 @@ body {
 }
 
 .wysiwyg-editor-content h2 {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #111827;
   margin-top: 0.5rem;
@@ -673,7 +673,7 @@ body {
 }
 
 .wysiwyg-editor-content h3 {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #111827;
   margin-top: 0.5rem;
@@ -730,6 +730,14 @@ body {
   padding-left: 1.5rem;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.wysiwyg-editor-content ul {
+  list-style-type: disc;
+}
+
+.wysiwyg-editor-content ol {
+  list-style-type: decimal;
 }
 
 .wysiwyg-editor-content li {

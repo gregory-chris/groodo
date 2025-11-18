@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Save, Trash2 } from 'lucide-react';
+import { Save, Trash2, AlertCircle } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { useProjectsContext } from '../context/ProjectsContext';
 import ConfirmDialog from '../../../components/ConfirmDialog';
@@ -21,8 +21,12 @@ function DetailsPanel() {
   const showingProject = selectedTask === undefined && selectedProject !== undefined;
   const showingTask = selectedTask !== undefined;
 
+  // Track if initial data has been loaded for the current selection
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Initialize edited data when selection changes
   useEffect(() => {
+    setIsInitialized(false);
     if (showingProject) {
       setEditedData({
         name: selectedProject.name || '',
@@ -36,6 +40,10 @@ function DetailsPanel() {
     } else {
       setEditedData({});
     }
+    // Set initialized after a short delay to allow state to settle
+    // This prevents the "unsaved changes" flash during transition
+    const timer = setTimeout(() => setIsInitialized(true), 50);
+    return () => clearTimeout(timer);
   }, [selectedProject?.id, selectedTask?.id]);
 
   const handleSaveProject = () => {
@@ -99,6 +107,8 @@ function DetailsPanel() {
   };
 
   const hasUnsavedChanges = useMemo(() => {
+    if (!isInitialized) return false;
+
     if (showingProject && selectedProject) {
       return (
         (editedData.name || '') !== (selectedProject.name || '') ||
@@ -112,7 +122,7 @@ function DetailsPanel() {
       );
     }
     return false;
-  }, [showingProject, showingTask, editedData, selectedProject, selectedTask]);
+  }, [showingProject, showingTask, editedData, selectedProject, selectedTask, isInitialized]);
 
   // Empty state
   if (!showingProject && !showingTask) {
@@ -134,7 +144,8 @@ function DetailsPanel() {
             {showingProject ? 'Project Details' : 'Task Details'}
           </h2>
           {hasUnsavedChanges && (
-            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 animate-pulse">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-white bg-amber-500 px-3 py-1 rounded-full shadow-sm animate-pulse">
+              <AlertCircle className="w-3.5 h-3.5" />
               Unsaved Changes
             </span>
           )}
