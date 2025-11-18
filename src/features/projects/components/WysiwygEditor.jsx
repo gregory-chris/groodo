@@ -61,8 +61,14 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
   useEffect(() => {
     if (editor && value !== undefined) {
       const currentContent = editor.getHTML();
-      // Only update if the content is actually different to avoid unnecessary re-renders
-      if (currentContent !== value) {
+      // Compare normalized HTML to avoid unnecessary updates
+      // We also check for empty content variations
+      const isEquivalent = 
+        currentContent === value || 
+        (currentContent === '<p></p>' && !value) ||
+        (!currentContent && value === '<p></p>');
+        
+      if (!isEquivalent) {
         editor.commands.setContent(value || '');
       }
     }

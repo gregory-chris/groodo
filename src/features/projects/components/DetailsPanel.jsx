@@ -42,7 +42,7 @@ function DetailsPanel() {
     }
     // Set initialized after a short delay to allow state to settle
     // This prevents the "unsaved changes" flash during transition
-    const timer = setTimeout(() => setIsInitialized(true), 50);
+    const timer = setTimeout(() => setIsInitialized(true), 100);
     return () => clearTimeout(timer);
   }, [selectedProject?.id, selectedTask?.id]);
 
