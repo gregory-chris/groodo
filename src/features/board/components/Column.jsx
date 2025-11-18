@@ -96,13 +96,31 @@ function Column({ date, className = '', ...props }) {
         }`} 
         role="banner"
       >
-        <div 
-          className={`text-base font-semibold tracking-wide ${
-            isTodayColumn ? 'text-primary' : 'text-gray-600'
-          }`} 
-          data-testid="column-day"
-        >
-          {getDayName(date)}, {formatDate(date, 'MMM d')}
+        <div className="flex items-center gap-3" data-testid="column-day">
+          {/* Calendar Icon Day Number */}
+          <div 
+            className={`flex items-center justify-center w-10 h-10 rounded-lg shadow-sm border font-bold text-lg ${
+              isTodayColumn
+                ? 'bg-white text-primary border-secondary/20'
+                : 'bg-white text-gray-700 border-gray-200'
+            }`}
+          >
+            {date.getDate()}
+          </div>
+
+          {/* Day Name and Month */}
+          <div className="flex flex-col">
+            <span 
+              className={`text-base font-bold leading-tight ${
+                isTodayColumn ? 'text-primary' : 'text-gray-900'
+              }`}
+            >
+              {getDayName(date)}
+            </span>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {date.toLocaleDateString('en-US', { month: 'short' })}
+            </span>
+          </div>
         </div>
       </div>
 

@@ -25,20 +25,20 @@ function ProjectsContent() {
       </div>
 
       {/* Main Content - Three Panel Layout */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 lg:gap-6 lg:p-6">
       {/* Desktop: All three panels */}
       {/* Projects Sidebar */}
-      <div className="w-80 flex-shrink-0 hidden lg:block min-w-[20rem] max-w-[20rem]">
+      <div className="w-80 flex-shrink-0 hidden lg:block min-w-[20rem] max-w-[20rem] lg:rounded-xl lg:border lg:border-gray-200 lg:shadow-sm lg:overflow-hidden">
         <ProjectsSidebar />
       </div>
 
       {/* Tasks Panel */}
-      <div className="w-[30rem] flex-shrink-0 hidden lg:block min-w-[30rem] max-w-[30rem]">
+      <div className="w-[30rem] flex-shrink-0 hidden lg:block min-w-[30rem] max-w-[30rem] lg:rounded-xl lg:border lg:border-gray-200 lg:shadow-sm lg:overflow-hidden">
         <TasksPanel />
       </div>
 
       {/* Details Panel */}
-      <div className="flex-1 hidden lg:block min-w-0">
+      <div className="flex-1 hidden lg:block min-w-0 lg:rounded-xl lg:border lg:border-gray-200 lg:shadow-sm lg:overflow-hidden">
         <DetailsPanel />
       </div>
 

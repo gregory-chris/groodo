@@ -84,7 +84,7 @@ function TaskItem({ task, level = 0, allTasks }) {
       <div
         ref={setNodeRef}
         style={style}
-        className={`group flex items-center gap-1 py-1.5 pr-3 hover:bg-gray-50 border-l-2 ${
+        className={`group flex items-start gap-1 py-1.5 pr-3 hover:bg-gray-50 border-l-2 ${
           isSelected ? 'bg-[#701E2E]/5 border-[#701E2E]' : 'border-transparent'
         } ${isDragging ? 'z-50' : ''}`}
       >
@@ -92,7 +92,7 @@ function TaskItem({ task, level = 0, allTasks }) {
         <button
           {...attributes}
           {...listeners}
-          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity cursor-grab active:cursor-grabbing"
+          className="mt-1 opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity cursor-grab active:cursor-grabbing"
           aria-label="Drag to reorder"
         >
           <GripVertical className="w-3 h-3 text-gray-400" />
@@ -102,7 +102,7 @@ function TaskItem({ task, level = 0, allTasks }) {
         {hasSubTasks ? (
           <button
             onClick={handleToggleExpand}
-            className="p-0.5 hover:bg-gray-200 rounded flex-shrink-0"
+            className="mt-1 p-0.5 hover:bg-gray-200 rounded flex-shrink-0"
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
             {isExpanded ? (
@@ -119,7 +119,7 @@ function TaskItem({ task, level = 0, allTasks }) {
         <button
           onClick={handleToggleComplete}
           disabled={!canComplete && !task.completed}
-          className={`flex-shrink-0 ${
+          className={`mt-1 flex-shrink-0 ${
             (!canComplete && !task.completed) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
           }`}
           aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
@@ -146,7 +146,7 @@ function TaskItem({ task, level = 0, allTasks }) {
         {canAddSub && (
           <button
             onClick={() => setIsAddingSubTask(true)}
-            className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity"
+            className="mt-1 opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded flex-shrink-0 transition-opacity"
             title="Add sub-task"
             aria-label="Add sub-task"
           >
@@ -243,9 +243,9 @@ function TasksPanel() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white border-r border-gray-200">
+    <div className="h-full w-full flex flex-col bg-white border-r lg:border-r-0 border-gray-200">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
+      <div className="h-16 px-4 border-b border-gray-200 flex-shrink-0 flex items-center">
         <h2 className="text-lg font-semibold text-gray-900">Tasks</h2>
       </div>
 

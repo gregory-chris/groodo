@@ -141,19 +141,23 @@ function TaskCard({
         {/* Task Content */}
         <div className="task-content">
           {/* Checkbox */}
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={handleToggleComplete}
-            className="task-checkbox"
-            aria-label={`Mark task "${title}" as ${completed ? 'incomplete' : 'complete'}`}
-            data-testid="task-checkbox"
-          />
+          <div className="pt-1">
+            <input
+              type="checkbox"
+              checked={completed}
+              onChange={handleToggleComplete}
+              className="task-checkbox"
+              aria-label={`Mark task "${title}" as ${completed ? 'incomplete' : 'complete'}`}
+              data-testid="task-checkbox"
+            />
+          </div>
 
           {/* Task Title */}
-          <div className="cursor-pointer" title={hasDescription ? content : ''}>
+          <div className="cursor-pointer flex-1 min-w-0" title={hasDescription ? content : ''}>
             <div
-              className="task-title cursor-pointer text-lg"
+              className={`cursor-pointer text-lg font-medium leading-snug tracking-tight break-words whitespace-normal ${
+                completed ? 'line-through text-gray-400' : 'text-gray-800'
+              }`}
               data-testid="task-title"
             >
               {title}

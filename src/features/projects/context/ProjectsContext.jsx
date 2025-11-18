@@ -59,8 +59,16 @@ function projectsReducer(state, action) {
 
     case ACTIONS.UPDATE_PROJECT: {
       const { projectId, updates } = action.payload;
+      
+      // Update selectedProjectId if the ID of the selected project changed
+      const newSelectedProjectId = 
+        state.selectedProjectId === projectId && updates.id 
+          ? updates.id 
+          : state.selectedProjectId;
+
       return {
         ...state,
+        selectedProjectId: newSelectedProjectId,
         projects: state.projects.map(project =>
           project.id === projectId
             ? { ...project, ...updates, updatedAt: new Date().toISOString() }
@@ -112,8 +120,16 @@ function projectsReducer(state, action) {
 
     case ACTIONS.UPDATE_TASK: {
       const { taskId, updates } = action.payload;
+
+      // Update selectedTaskId if the ID of the selected task changed
+      const newSelectedTaskId = 
+        state.selectedTaskId === taskId && updates.id 
+          ? updates.id 
+          : state.selectedTaskId;
+
       return {
         ...state,
+        selectedTaskId: newSelectedTaskId,
         tasks: state.tasks.map(task =>
           task.id === taskId
             ? { ...task, ...updates }

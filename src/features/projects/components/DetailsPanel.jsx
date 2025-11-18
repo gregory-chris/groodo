@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Save, Trash2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { useProjectsContext } from '../context/ProjectsContext';
@@ -98,6 +98,22 @@ function DetailsPanel() {
     setConfirmDialog({ isOpen: false, type: null, id: null });
   };
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (showingProject && selectedProject) {
+      return (
+        (editedData.name || '') !== (selectedProject.name || '') ||
+        (editedData.description || '') !== (selectedProject.description || '')
+      );
+    }
+    if (showingTask && selectedTask) {
+      return (
+        (editedData.title || '') !== (selectedTask.title || '') ||
+        (editedData.content || '') !== (selectedTask.content || '')
+      );
+    }
+    return false;
+  }, [showingProject, showingTask, editedData, selectedProject, selectedTask]);
+
   // Empty state
   if (!showingProject && !showingTask) {
     return (
@@ -112,10 +128,17 @@ function DetailsPanel() {
   return (
     <div className="h-full w-full flex flex-col bg-white">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <h2 className="text-lg font-semibold text-gray-900">
-          {showingProject ? 'Project Details' : 'Task Details'}
-        </h2>
+      <div className="h-16 px-4 border-b border-gray-200 flex-shrink-0 flex items-center">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {showingProject ? 'Project Details' : 'Task Details'}
+          </h2>
+          {hasUnsavedChanges && (
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 animate-pulse">
+              Unsaved Changes
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Content */}

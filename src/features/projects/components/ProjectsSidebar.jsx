@@ -31,20 +31,18 @@ function ProjectsSidebar() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-white border-r border-gray-200">
+    <div className="h-full w-full flex flex-col bg-white border-r lg:border-r-0 border-gray-200">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Projects</h2>
-          <button
-            onClick={() => setIsAddingProject(true)}
+      <div className="h-16 px-4 border-b border-gray-200 flex-shrink-0 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">Projects</h2>
+        <button
+          onClick={() => setIsAddingProject(true)}
             className="p-1.5 text-[#701E2E] hover:bg-[#701E2E]/10 rounded-md transition-colors"
             title="Add new project"
             aria-label="Add new project"
           >
             <Plus className="w-5 h-5" />
           </button>
-        </div>
       </div>
 
       {/* Project List */}
