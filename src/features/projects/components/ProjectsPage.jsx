@@ -33,7 +33,7 @@ function ProjectsContent() {
       </div>
 
       {/* Tasks Panel */}
-      <div className="w-80 flex-shrink-0 hidden lg:block min-w-[20rem] max-w-[20rem]">
+      <div className="w-[30rem] flex-shrink-0 hidden lg:block min-w-[30rem] max-w-[30rem]">
         <TasksPanel />
       </div>
 
@@ -48,7 +48,7 @@ function ProjectsContent() {
           <ProjectsSidebar />
         </div>
         <div className="flex-1 flex min-w-0">
-          <div className="w-80 flex-shrink-0 min-w-[20rem] max-w-[20rem]">
+          <div className="w-[30rem] flex-shrink-0 min-w-[30rem] max-w-[30rem]">
             <TasksPanel />
           </div>
           <div className="flex-1 min-w-0">

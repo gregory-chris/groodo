@@ -89,8 +89,11 @@ function TaskCard({
 
   // Truncate description for tooltip
   const truncateText = (text, maxLength = 150) => {
-    if (!text || text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + '...';
+    if (!text) return '';
+    // Strip HTML tags
+    const strippedText = text.replace(/<[^>]+>/g, '');
+    if (strippedText.length <= maxLength) return strippedText;
+    return strippedText.substring(0, maxLength).trim() + '...';
   };
 
   // Handle keyboard interactions
@@ -150,7 +153,7 @@ function TaskCard({
           {/* Task Title */}
           <div className="cursor-pointer" title={hasDescription ? content : ''}>
             <div
-              className="task-title cursor-pointer"
+              className="task-title cursor-pointer text-lg"
               data-testid="task-title"
             >
               {title}

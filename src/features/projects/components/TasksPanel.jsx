@@ -135,7 +135,7 @@ function TaskItem({ task, level = 0, allTasks }) {
         {/* Task Title */}
         <button
           onClick={() => selectTask(task.id)}
-          className={`flex-1 text-left text-sm min-w-0 ${
+          className={`flex-1 text-left text-base min-w-0 ${
             task.completed ? 'text-gray-400 line-through' : 'text-gray-900'
           }`}
         >
@@ -172,7 +172,7 @@ function TaskItem({ task, level = 0, allTasks }) {
               }
             }}
             placeholder="Sub-task title..."
-            className="w-full px-2 py-1 text-sm border border-[#701E2E] rounded focus:outline-none focus:ring-1 focus:ring-[#701E2E]"
+            className="w-full px-2 py-1 text-base border border-[#701E2E] rounded focus:outline-none focus:ring-1 focus:ring-[#701E2E]"
             autoFocus
           />
         </div>
@@ -257,7 +257,7 @@ function TasksPanel() {
           onChange={(e) => setNewTaskTitle(e.target.value)}
           onKeyDown={handleAddTask}
           placeholder="Add a new task..."
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#701E2E] focus:border-transparent"
+          className="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#701E2E] focus:border-transparent"
         />
         <p className="text-xs text-gray-500 mt-1">Press Enter to add</p>
       </div>

@@ -97,7 +97,7 @@ function Column({ date, className = '', ...props }) {
         role="banner"
       >
         <div 
-          className={`text-xs font-semibold tracking-wide ${
+          className={`text-base font-semibold tracking-wide ${
             isTodayColumn ? 'text-primary' : 'text-gray-600'
           }`} 
           data-testid="column-day"

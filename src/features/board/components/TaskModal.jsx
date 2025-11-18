@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import DOMPurify from 'dompurify';
+import WysiwygEditor from '../../projects/components/WysiwygEditor';
 
 /**
  * TaskModal component for editing task title and description
- * Features elegant design with markdown preview and editing
+ * Features elegant design with WYSIWYG editing
  */
 function TaskModal({ 
   isOpen, 
@@ -16,7 +16,6 @@ function TaskModal({
 }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   // Initialize form with task data
   useEffect(() => {
@@ -28,7 +27,6 @@ function TaskModal({
         setTitle('');
         setDescription('');
       }
-      setIsPreviewMode(false);
     }
   }, [isOpen, task, mode]);
 
@@ -40,7 +38,7 @@ function TaskModal({
 
     const taskData = {
       title: title.trim(),
-      content: description.trim()
+      content: DOMPurify.sanitize(description || '')
     };
 
     if (mode === 'edit' && task) {
@@ -118,69 +116,18 @@ function TaskModal({
 
           {/* Description Field */}
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <label 
-                htmlFor="task-description" 
-                className="block text-sm font-medium text-gray-700"
-              >
-                Description
-              </label>
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setIsPreviewMode(false)}
-                  className={`px-3 py-1 text-xs font-medium rounded transition-colors duration-200 ${
-                    !isPreviewMode 
-                      ? 'bg-white text-gray-900 shadow-sm' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => setIsPreviewMode(true)}
-                  className={`px-3 py-1 text-xs font-medium rounded transition-colors duration-200 ${
-                    isPreviewMode 
-                      ? 'bg-white text-gray-900 shadow-sm' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Preview
-                </button>
-              </div>
-            </div>
-
-            {/* Editor/Preview Container */}
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              {!isPreviewMode ? (
-                <textarea
-                  id="task-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter task description (supports markdown)..."
-                  className="w-full h-48 px-4 py-3 text-sm resize-none focus:outline-none"
-                  style={{ fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace' }}
-                />
-              ) : (
-                <div className="h-48 px-4 py-3 overflow-y-auto bg-gray-50">
-                  {description.trim() ? (
-                    <div className="prose prose-sm max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {description}
-                      </ReactMarkdown>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-sm italic">No description provided</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Markdown Help */}
-            {!isPreviewMode && (
-              <div className="mt-2 text-xs text-gray-500">
-                Supports markdown: **bold**, *italic*, `code`, [links](url), lists, etc.
-              </div>
-            )}
+            <label 
+              htmlFor="task-description" 
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Description
+            </label>
+            <WysiwygEditor
+              id="task-description"
+              value={description}
+              onChange={(content) => setDescription(content)}
+              placeholder="Enter task description..."
+            />
           </div>
         </div>
 
