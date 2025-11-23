@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback, useState } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useProjectsPersistence } from '../hooks/useProjectsPersistence.js';
 
@@ -189,6 +189,23 @@ export function ProjectsProvider({ children }) {
   // Initialize persistence hook for auto-save, load, error handling
   const persistence = useProjectsPersistence(state, dispatch);
 
+  // Sync selection to localStorage whenever it changes, but only after initial load
+  useEffect(() => {
+    if (persistence.isLoaded) {
+      if (state.selectedProjectId) {
+        localStorage.setItem('groodo_selected_project', state.selectedProjectId);
+      } else {
+        localStorage.removeItem('groodo_selected_project');
+      }
+
+      if (state.selectedTaskId) {
+        localStorage.setItem('groodo_selected_task', state.selectedTaskId);
+      } else {
+        localStorage.removeItem('groodo_selected_task');
+      }
+    }
+  }, [state.selectedProjectId, state.selectedTaskId, persistence.isLoaded]);
+
   // Action creators with immediate persistence
   const addProject = useCallback((projectData) => {
     const tempId = `project-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -246,13 +263,6 @@ export function ProjectsProvider({ children }) {
       type: ACTIONS.SELECT_PROJECT,
       payload: projectId,
     });
-    
-    // Save to localStorage for persistence
-    if (projectId) {
-      localStorage.setItem('groodo_selected_project', projectId);
-    } else {
-      localStorage.removeItem('groodo_selected_project');
-    }
   }, []);
 
   const selectTask = useCallback((taskId) => {
@@ -260,13 +270,6 @@ export function ProjectsProvider({ children }) {
       type: ACTIONS.SELECT_TASK,
       payload: taskId,
     });
-    
-    // Save to localStorage for persistence
-    if (taskId) {
-      localStorage.setItem('groodo_selected_task', taskId);
-    } else {
-      localStorage.removeItem('groodo_selected_task');
-    }
   }, []);
 
   const addTask = useCallback((taskData) => {
@@ -395,4 +398,3 @@ export function useProjectsContext() {
 }
 
 export { ACTIONS };
-
