@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 export function useProjectsPersistence(state, dispatch) {
   const { status } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(null);
 
   // Determine which client to use based on auth status
@@ -33,6 +34,7 @@ export function useProjectsPersistence(state, dispatch) {
    */
   const loadData = useCallback(async () => {
     setIsLoading(true);
+    setIsLoaded(false);
     setError(null);
 
     try {
@@ -75,6 +77,7 @@ export function useProjectsPersistence(state, dispatch) {
           selectedTaskId,
         }
       });
+      setIsLoaded(true);
     } catch (err) {
       console.error('Failed to load data:', err);
       toast.error('Failed to load projects: ' + (err.message || 'Unknown error'));
@@ -252,6 +255,7 @@ export function useProjectsPersistence(state, dispatch) {
 
   return {
     isLoading,
+    isLoaded,
     error,
     handleCreateProject,
     handleUpdateProject,
@@ -261,4 +265,3 @@ export function useProjectsPersistence(state, dispatch) {
     handleDeleteTask,
   };
 }
-
