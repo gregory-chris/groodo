@@ -87,11 +87,18 @@ function TaskCard({
     setShowTooltip(false);
   };
 
+  // Strip HTML tags from text
+  const stripHtml = (text) => {
+    if (!text) return '';
+    // Create a temporary element to decode HTML entities properly
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    return doc.body.textContent || '';
+  };
+
   // Truncate description for tooltip
   const truncateText = (text, maxLength = 150) => {
     if (!text) return '';
-    // Strip HTML tags
-    const strippedText = text.replace(/<[^>]+>/g, '');
+    const strippedText = stripHtml(text);
     if (strippedText.length <= maxLength) return strippedText;
     return strippedText.substring(0, maxLength).trim() + '...';
   };
@@ -153,7 +160,7 @@ function TaskCard({
           </div>
 
           {/* Task Title */}
-          <div className="cursor-pointer flex-1 min-w-0" title={hasDescription ? content : ''}>
+          <div className="cursor-pointer flex-1 min-w-0" title={hasDescription ? stripHtml(content) : ''}>
             <div
               className={`cursor-pointer text-lg font-medium leading-snug tracking-tight break-words whitespace-normal ${
                 completed ? 'line-through text-gray-400' : 'text-gray-800'
