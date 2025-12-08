@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext.jsx';
 
 export default function AuthModal({ open, mode, info, onClose }) {
   const firstFieldRef = useRef(null);
-  const { performSignIn, performSignUp, status, error } = useAuth();
+  const { performSignIn, performSignUp, status, error, setModalState } = useAuth();
   const [form, setForm] = useState({ email: '', password: '', fullName: '', passwordConfirm: '' });
   const [localError, setLocalError] = useState('');
   const [validationErrors, setValidationErrors] = useState(null);
@@ -159,6 +159,38 @@ export default function AuthModal({ open, mode, info, onClose }) {
                 placeholder="••••••••"
                 autoComplete="new-password"
               />
+            </div>
+          )}
+
+          {mode === 'sign-up' && (
+            <div className="pt-2 pb-1 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setLocalError('');
+                  setValidationErrors(null);
+                  setModalState(s => ({ ...s, mode: 'sign-in', info: undefined }));
+                }}
+                className="text-sm text-primary hover:text-primary/80 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded px-2 py-1"
+              >
+                Already have an account? Sign in
+              </button>
+            </div>
+          )}
+
+          {mode === 'sign-in' && (
+            <div className="pt-2 pb-1 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setLocalError('');
+                  setValidationErrors(null);
+                  setModalState(s => ({ ...s, mode: 'sign-up', info: undefined }));
+                }}
+                className="text-sm text-primary hover:text-primary/80 hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded px-2 py-1"
+              >
+                Don't have an account? Sign up
+              </button>
             </div>
           )}
 
