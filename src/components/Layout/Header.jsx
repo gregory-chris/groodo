@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { UserRound, LogOut, LogIn, UserPlus, UserCheck } from 'lucide-react';
+import { UserRound, LogOut, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../../features/auth/AuthContext.jsx';
 import AuthModal from '../../features/auth/AuthModal.jsx';
 
@@ -99,7 +99,7 @@ function Header() {
             <div className="relative flex items-center" ref={dropdownRef}>
               <button
                 type="button"
-                className={`p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${
                   isGuest 
                     ? 'text-gray-600 hover:text-primary hover:bg-gray-100' 
                     : 'bg-primary text-white hover:bg-primary/90'
@@ -108,10 +108,15 @@ function Header() {
                 title={isGuest ? 'Sign in' : `Logged in as ${user?.email || 'User'}`}
                 onClick={handleUserIconClick}
               >
+                {!isGuest && (
+                  <span className="text-sm font-medium max-w-[120px] sm:max-w-[180px] truncate">
+                    {user?.fullName || user?.email || 'User'}
+                  </span>
+                )}
                 {isGuest ? (
                   <UserRound className="w-6 h-6" />
                 ) : (
-                  <UserCheck className="w-6 h-6" />
+                  <UserRound className="w-6 h-6" fill="currentColor" />
                 )}
               </button>
 

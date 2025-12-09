@@ -90,11 +90,20 @@ function Header({ isLoading = false, subtitle = 'Task Management' }) {
               <div className="relative" ref={menuRef}>
                 <button
                   type="button"
-                  className="p-2 rounded-full text-secondary hover:text-white hover:bg-secondary/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
+                    isGuest
+                      ? 'text-secondary hover:text-white hover:bg-secondary/30 focus:ring-secondary'
+                      : 'bg-primary text-white hover:bg-primary/90 focus:ring-primary'
+                  }`}
                   aria-label="User menu"
                   onClick={() => setMenuOpen((o) => !o)}
                 >
-                  <UserRound className="w-6 h-6" />
+                  {!isGuest && (
+                    <span className="text-sm font-semibold text-white max-w-[120px] sm:max-w-[180px] truncate">
+                      {user?.fullName || user?.username || user?.email || 'User'}
+                    </span>
+                  )}
+                  <UserRound className="w-6 h-6 text-white" fill={!isGuest ? "currentColor" : "none"} />
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50">

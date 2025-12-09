@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useReducer, useCallback, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useReducer, useCallback, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { getMe, signIn, signUp, signOut, getToken } from '../../lib/authClient.js';
 import { getCookie, setCookie } from '../../lib/cookies.js';
@@ -53,23 +53,30 @@ function shouldShowSignupModal() {
 
 function updateSignupModalCookie() {
   const now = Date.now().toString();
-  // Store for a long time (30 days) so we can check the interval
-  const maxAgeSeconds = 30 * 24 * 60 * 60;
+  const maxAgeSeconds = 60 * 60;
   setCookie(SIGNUP_MODAL_COOKIE_NAME, now, maxAgeSeconds);
 }
 
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [modalState, setModalState] = useState({ open: false, mode: 'sign-in' });
+  const modalStateRef = useRef(modalState);
+  
+  // Keep ref in sync with modal state
+  useEffect(() => {
+    modalStateRef.current = modalState;
+  }, [modalState]);
 
   const openAuthModal = useCallback((mode = 'sign-in') => {
     dispatch({ type: 'CLEAR_ERROR' });
     setModalState({ open: true, mode });
+
     // Update cookie when sign-up modal is shown
     if (mode === 'sign-up') {
       updateSignupModalCookie();
     }
   }, []);
+  
   const closeAuthModal = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
     setModalState(s => ({ ...s, open: false, info: undefined }));
@@ -108,14 +115,40 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
-  // Show sign-up modal automatically in guest mode if needed
+  // Show sign-up modal automatically in guest mode if needed (on initial load)
   useEffect(() => {
     if (state.status === 'guest' && !modalState.open) {
       if (shouldShowSignupModal()) {
         openAuthModal('sign-up');
       }
     }
-  }, [state.status, modalState.open, openAuthModal]);
+  }, [state.status, openAuthModal]);
+
+  // Periodic check for sign-up modal appearance (every 2 minutes)
+  useEffect(() => {
+    // Only run periodic checks in guest mode
+    if (state.status !== 'guest') {
+      return;
+    }
+
+    // Check immediately and then set up interval
+    // Use ref to always get current modal state
+    const checkAndShowModal = () => {
+      if (!modalStateRef.current.open && shouldShowSignupModal()) {
+        openAuthModal('sign-up');
+      }
+    };
+
+    // Initial check
+    checkAndShowModal();
+
+    // Set up interval to check every 2 minutes
+    const intervalId = setInterval(checkAndShowModal, 2 * 60 * 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [state.status, openAuthModal]);
 
   const performSignIn = useCallback(async (form) => {
     dispatch({ type: 'LOAD_START' });
