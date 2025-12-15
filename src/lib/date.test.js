@@ -7,7 +7,8 @@ import {
   getPreviousWeek,
   formatDate,
   getWeekDates,
-  isSameDay
+  isSameDay,
+  getDateKey
 } from './date.js';
 
 describe('Date Utils', () => {
@@ -237,6 +238,51 @@ describe('Date Utils', () => {
       
       expect(isToday(today)).toBe(true);
       expect(isToday(tomorrow)).toBe(false);
+    });
+  });
+
+  describe('getDateKey', () => {
+    it('should return date in YYYY-MM-DD format', () => {
+      const date = new Date(2025, 11, 15); // Dec 15, 2025
+      const key = getDateKey(date);
+      
+      expect(key).toBe('2025-12-15');
+      expect(key).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('should use local date components, not UTC', () => {
+      // Create a date at midnight local time (which might be previous day in UTC)
+      const date = new Date(2025, 11, 15, 0, 0, 0); // Dec 15, 2025 at midnight local
+      const key = getDateKey(date);
+      
+      // Should always return the local date, not UTC date
+      expect(key).toBe('2025-12-15');
+    });
+
+    it('should handle dates at different times of day consistently', () => {
+      const date1 = new Date(2025, 11, 15, 0, 0, 0); // Midnight
+      const date2 = new Date(2025, 11, 15, 12, 0, 0); // Noon
+      const date3 = new Date(2025, 11, 15, 23, 59, 59); // End of day
+      
+      expect(getDateKey(date1)).toBe('2025-12-15');
+      expect(getDateKey(date2)).toBe('2025-12-15');
+      expect(getDateKey(date3)).toBe('2025-12-15');
+    });
+
+    it('should handle month and day padding correctly', () => {
+      const date1 = new Date(2025, 0, 5); // Jan 5, 2025
+      const date2 = new Date(2025, 8, 10); // Sept 10, 2025
+      
+      expect(getDateKey(date1)).toBe('2025-01-05');
+      expect(getDateKey(date2)).toBe('2025-09-10');
+    });
+
+    it('should handle year boundaries', () => {
+      const date1 = new Date(2025, 11, 31); // Dec 31, 2025
+      const date2 = new Date(2026, 0, 1); // Jan 1, 2026
+      
+      expect(getDateKey(date1)).toBe('2025-12-31');
+      expect(getDateKey(date2)).toBe('2026-01-01');
     });
   });
 

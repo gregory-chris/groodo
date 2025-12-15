@@ -1,5 +1,6 @@
 import { TaskStorageClient } from '../taskStorageClient.js';
 import * as groodoApi from '../groodoApiTasksClient.js';
+import { getDateKey } from '../date.js';
 
 /**
  * GroodoApiClient - Implements task storage using Groodo API server
@@ -90,7 +91,7 @@ export class GroodoApiClient extends TaskStorageClient {
       id: apiTask.id,
       title: apiTask.title || '',
       content: apiTask.description || '',
-      column: apiTask.date || new Date().toISOString().split('T')[0],
+      column: apiTask.date || getDateKey(new Date()),
       order: typeof apiTask.order === 'number' ? apiTask.order : 0,
       completed: !!apiTask.completed,
       createdAt: apiTask.createdAt || Date.now(),
