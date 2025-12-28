@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import WysiwygEditor from '../../projects/components/WysiwygEditor';
+import { useBoardContext } from '../context/BoardContext';
+import { getNextWeek, getDateKey } from '../../../lib/date';
 
 /**
  * TaskModal component for editing task title and description
@@ -14,6 +16,7 @@ function TaskModal({
   task = null,
   mode = 'edit' // 'edit' or 'create'
 }) {
+  const { state, moveTask } = useBoardContext();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
@@ -52,6 +55,29 @@ function TaskModal({
 
   // Handle cancel
   const handleCancel = () => {
+    onClose();
+  };
+
+  // Handle move to next week
+  const handleMoveToNextWeek = () => {
+    if (!task || !state.currentWeek) {
+      return;
+    }
+
+    // Calculate next week's Sunday
+    const nextWeek = getNextWeek(state.currentWeek);
+    const nextWeekSundayKey = getDateKey(nextWeek.start);
+
+    // Get tasks in the target column to determine the order (add at the end)
+    const targetColumnTasks = state.tasks.filter(
+      t => t.column === nextWeekSundayKey && t.id !== task.id
+    );
+    const targetOrder = targetColumnTasks.length;
+
+    // Move the task to next week's Sunday
+    moveTask(task.id, nextWeekSundayKey, targetOrder);
+
+    // Close the modal
     onClose();
   };
 
@@ -132,24 +158,37 @@ function TaskModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 bg-gray-50">
-          <button
-            onClick={handleCancel}
-            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors duration-200"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!title.trim()}
-            className={`px-6 py-2.5 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors duration-200 ${
-              title.trim()
-                ? 'bg-gradient-to-br from-primary to-accent hover:shadow-lg hover:-translate-y-0.5'
-                : 'bg-gray-300 cursor-not-allowed'
-            }`}
-          >
-            {mode === 'edit' ? 'Update' : 'Create'}
-          </button>
+        <div className="flex items-center justify-between gap-3 p-6 border-t border-gray-100 bg-gray-50">
+          <div className="flex items-center gap-3">
+            {mode === 'edit' && state.currentWeek && (
+              <button
+                onClick={handleMoveToNextWeek}
+                className="px-6 py-2.5 text-sm font-medium text-secondary bg-white border border-secondary/30 rounded-lg hover:bg-secondary/5 hover:border-secondary/50 focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-colors duration-200"
+                aria-label="Move task to next week"
+              >
+                Move to Next Week
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCancel}
+              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!title.trim()}
+              className={`px-6 py-2.5 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors duration-200 ${
+                title.trim()
+                  ? 'bg-gradient-to-br from-primary to-accent hover:shadow-lg hover:-translate-y-0.5'
+                  : 'bg-gray-300 cursor-not-allowed'
+              }`}
+            >
+              {mode === 'edit' ? 'Update' : 'Create'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
