@@ -54,7 +54,7 @@ function Header({ isLoading = false, subtitle = 'Task Management' }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <h1>GrooDo</h1>
-              <span>{subtitle}</span>
+              <span className="hidden sm:inline">{subtitle}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ color: '#CF904E', fontWeight: 600, fontSize: '1.25rem' }}

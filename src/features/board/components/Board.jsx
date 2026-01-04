@@ -42,11 +42,11 @@ function BoardContent() {
       </div>
 
       {/* Main Content - Task Board */}
-      <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-hidden flex flex-col md:px-4 sm:px-3">
+      <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-y-auto sm:overflow-hidden flex flex-col md:px-4 sm:px-3">
         <h2 className="sr-only">Task Board</h2>
         
         {/* Task Columns */}
-        <div className="grid grid-cols-1 gap-4 flex-1 overflow-hidden min-h-0 w-full justify-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 w-full justify-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:flex-1 sm:overflow-hidden sm:min-h-0">
           {weekDates
             .filter(date => date instanceof Date && !isNaN(date.getTime()))
             .map((date, index) => (

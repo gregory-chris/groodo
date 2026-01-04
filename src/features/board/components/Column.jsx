@@ -78,7 +78,7 @@ function Column({ date, className = '', ...props }) {
 
   return (
     <div 
-      className={`flex flex-col rounded-xl shadow-lg border transition-all duration-200 overflow-hidden min-w-[180px] w-full ${
+      className={`flex flex-col rounded-xl shadow-lg border transition-all duration-200 overflow-hidden min-w-[180px] w-full min-h-[400px] sm:min-h-0 ${
         isTodayColumn 
           ? 'bg-gradient-to-br from-secondary/5 to-accent/5 border-secondary/20 shadow-secondary/15' 
           : 'bg-white border-gray-100 hover:shadow-xl hover:border-gray-200'

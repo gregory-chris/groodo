@@ -40,28 +40,28 @@ function WeekNav() {
   return (
     <div 
       data-testid="week-nav"
-      className="flex flex-row items-center justify-between bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 w-full"
+      className="flex flex-col sm:flex-row items-center justify-center sm:justify-between bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 sm:px-6 sm:py-4 w-full gap-3 sm:gap-0"
     >
       {/* Week Range Display */}
-      <div className="flex-1">
+      <div className="flex-1 w-full sm:w-auto">
         <h2 
           data-testid="week-range"
-          className="text-2xl font-bold text-primary m-0 text-left leading-normal"
+          className="text-lg sm:text-2xl font-bold text-primary m-0 text-center sm:text-left leading-normal"
         >
           {getWeekRangeDisplay()}
         </h2>
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-center sm:justify-end">
         {/* Previous Week Button */}
         <button
           data-testid="prev-week-btn"
           onClick={goToPreviousWeek}
           aria-label="Previous week"
-          className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary to-accent text-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20"
+          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent text-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Today Button */}
@@ -69,7 +69,7 @@ function WeekNav() {
           data-testid="today-btn"
           onClick={goToCurrentWeek}
           aria-label="Go to current week"
-          className="flex items-center justify-center h-10 px-8 bg-gradient-to-br from-secondary to-orange-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20 whitespace-nowrap"
+          className="flex items-center justify-center h-8 sm:h-10 px-4 sm:px-8 bg-gradient-to-br from-secondary to-orange-600 text-white rounded-lg font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20 whitespace-nowrap"
         >
           Today
         </button>
@@ -79,9 +79,9 @@ function WeekNav() {
           data-testid="next-week-btn"
           onClick={goToNextWeek}
           aria-label="Next week"
-          className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary to-accent text-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20"
+          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent text-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-20"
         >
-          <ChevronRight size={20} />
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
     </div>
