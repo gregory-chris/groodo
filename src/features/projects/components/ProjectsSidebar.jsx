@@ -30,6 +30,22 @@ function ProjectsSidebar() {
     selectProject(projectId);
   };
 
+  // Strip HTML tags from text
+  const stripHtml = (text) => {
+    if (!text) return '';
+    // Create a temporary element to decode HTML entities properly
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    return doc.body.textContent || '';
+  };
+
+  // Format description: strip HTML, truncate to 30 chars, add ellipsis if needed
+  const formatDescription = (description) => {
+    if (!description) return '';
+    const stripped = stripHtml(description);
+    if (stripped.length <= 30) return stripped;
+    return stripped.substring(0, 30).trim() + '...';
+  };
+
   return (
     <div className="h-full w-full flex flex-col bg-white border-r lg:border-r-0 border-gray-200">
       {/* Header */}
@@ -112,7 +128,7 @@ function ProjectsSidebar() {
                   </h3>
                   {project.description && (
                     <p className="text-xs text-gray-500 truncate mt-1">
-                      {project.description}
+                      {formatDescription(project.description)}
                     </p>
                   )}
                 </div>
