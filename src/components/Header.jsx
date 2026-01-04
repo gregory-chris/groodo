@@ -99,7 +99,7 @@ function Header({ isLoading = false, subtitle = 'Task Management' }) {
                   onClick={() => setMenuOpen((o) => !o)}
                 >
                   {!isGuest && (
-                    <span className="text-sm font-semibold text-white max-w-[120px] sm:max-w-[180px] truncate">
+                    <span className="hidden sm:inline text-sm font-semibold text-white max-w-[120px] sm:max-w-[180px] truncate">
                       {user?.fullName || user?.username || user?.email || 'User'}
                     </span>
                   )}
