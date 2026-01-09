@@ -2,8 +2,9 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Board from './features/board/components/Board';
 
-// Lazy load Projects page for code splitting
+// Lazy load Projects and Documents pages for code splitting
 const ProjectsPage = lazy(() => import('./features/projects/components/ProjectsPage'));
+const DocumentsPage = lazy(() => import('./features/documents/components/DocumentsPage'));
 
 // Loading component
 function LoadingFallback() {
@@ -29,6 +30,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Board />} />
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

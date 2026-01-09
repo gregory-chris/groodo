@@ -8,6 +8,7 @@ function Navigation() {
   const location = useLocation();
   const isWeeklyTasks = location.pathname === '/';
   const isProjects = location.pathname === '/projects';
+  const isDocuments = location.pathname === '/documents';
 
   const linkBaseClass = "px-4 py-2 font-semibold transition-colors duration-200";
   const activeLinkClass = "text-[#701E2E] border-b-2 border-[#701E2E] cursor-default";
@@ -44,6 +45,22 @@ function Navigation() {
           className={`${linkBaseClass} ${inactiveLinkClass}`}
         >
           Projects
+        </Link>
+      )}
+
+      {isDocuments ? (
+        <span 
+          className={`${linkBaseClass} ${activeLinkClass}`}
+          aria-current="page"
+        >
+          Documents
+        </span>
+      ) : (
+        <Link 
+          to="/documents" 
+          className={`${linkBaseClass} ${inactiveLinkClass}`}
+        >
+          Documents
         </Link>
       )}
     </nav>
