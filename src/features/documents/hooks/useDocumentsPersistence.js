@@ -149,6 +149,20 @@ export function useDocumentsPersistence(state, dispatch) {
   }, [documentsClient]);
 
   /**
+   * Fetch a single document's full content from server
+   */
+  const handleFetchDocumentContent = useCallback(async (documentId) => {
+    try {
+      const document = await documentsClient.getDocument(documentId);
+      return { success: true, document };
+    } catch (error) {
+      console.error('Failed to fetch document content:', error);
+      toast.error('Failed to load document: ' + (error.message || 'Unknown error'));
+      return { success: false, error };
+    }
+  }, [documentsClient]);
+
+  /**
    * Get the next "Untitled N" name
    */
   const getNextUntitledName = useCallback(() => {
@@ -162,6 +176,7 @@ export function useDocumentsPersistence(state, dispatch) {
     handleCreateDocument,
     handleUpdateDocument,
     handleDeleteDocument,
+    handleFetchDocumentContent,
     getNextUntitledName,
   };
 }

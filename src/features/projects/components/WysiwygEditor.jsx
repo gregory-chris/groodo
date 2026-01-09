@@ -30,7 +30,7 @@ const extensions = [
  * WysiwygEditor - Reusable WYSIWYG editor component using TipTap
  * Simple toolbar with headings, basic formatting, lists, indentation, and code
  */
-function WysiwygEditor({ value, onChange, placeholder, id }) {
+function WysiwygEditor({ value, onChange, placeholder, id, disabled }) {
   const onChangeRef = useRef(onChange);
 
   useEffect(() => {
@@ -74,12 +74,22 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
     }
   }, [editor, value]);
 
+  // Sync editor editable state when disabled prop changes
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!disabled);
+    }
+  }, [editor, disabled]);
+
   if (!editor) {
     return null;
   }
 
   return (
-    <div className="wysiwyg-editor-wrapper" id={id}>
+    <div 
+      className={`wysiwyg-editor-wrapper ${disabled ? 'opacity-50 pointer-events-none' : ''}`} 
+      id={id}
+    >
       {/* Toolbar */}
       <div className="wysiwyg-toolbar">
         {/* Headings */}
@@ -88,6 +98,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
           title="Heading 1"
+          disabled={disabled}
         >
           <Heading1 className="w-4 h-4" />
         </button>
@@ -96,6 +107,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
           title="Heading 2"
+          disabled={disabled}
         >
           <Heading2 className="w-4 h-4" />
         </button>
@@ -104,6 +116,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}
           title="Heading 3"
+          disabled={disabled}
         >
           <Heading3 className="w-4 h-4" />
         </button>
@@ -116,6 +129,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={editor.isActive('bold') ? 'is-active' : ''}
           title="Bold"
+          disabled={disabled}
         >
           <Bold className="w-4 h-4" />
         </button>
@@ -124,6 +138,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={editor.isActive('italic') ? 'is-active' : ''}
           title="Italic"
+          disabled={disabled}
         >
           <Italic className="w-4 h-4" />
         </button>
@@ -132,6 +147,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={editor.isActive('underline') ? 'is-active' : ''}
           title="Underline"
+          disabled={disabled}
         >
           <UnderlineIcon className="w-4 h-4" />
         </button>
@@ -140,6 +156,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleStrike().run()}
           className={editor.isActive('strike') ? 'is-active' : ''}
           title="Strikethrough"
+          disabled={disabled}
         >
           <Strikethrough className="w-4 h-4" />
         </button>
@@ -152,6 +169,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={editor.isActive('bulletList') ? 'is-active' : ''}
           title="Bullet List"
+          disabled={disabled}
         >
           <List className="w-4 h-4" />
         </button>
@@ -160,6 +178,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={editor.isActive('orderedList') ? 'is-active' : ''}
           title="Ordered List"
+          disabled={disabled}
         >
           <ListOrdered className="w-4 h-4" />
         </button>
@@ -172,6 +191,7 @@ function WysiwygEditor({ value, onChange, placeholder, id }) {
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           className={editor.isActive('codeBlock') ? 'is-active' : ''}
           title="Code Block"
+          disabled={disabled}
         >
           <Code className="w-4 h-4" />
         </button>
@@ -188,12 +208,14 @@ WysiwygEditor.propTypes = {
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
   id: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 WysiwygEditor.defaultProps = {
   value: '',
   placeholder: '',
   id: undefined,
+  disabled: false,
 };
 
 export default WysiwygEditor;

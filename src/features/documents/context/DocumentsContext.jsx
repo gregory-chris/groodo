@@ -208,6 +208,29 @@ export function DocumentsProvider({ children }) {
     return persistence.getNextUntitledName();
   }, [persistence]);
 
+  // Fetch full document content from server and update state
+  const fetchDocumentContent = useCallback(async (documentId) => {
+    const result = await persistence.handleFetchDocumentContent(documentId);
+    
+    if (result.success && result.document) {
+      // Update document in state with fetched content
+      dispatch({
+        type: ACTIONS.UPDATE_DOCUMENT,
+        payload: { 
+          documentId, 
+          updates: { 
+            content: result.document.content,
+            // Also update other fields in case they changed on server
+            title: result.document.title,
+            updatedAt: result.document.updatedAt,
+          } 
+        },
+      });
+    }
+    
+    return result;
+  }, [persistence]);
+
   const value = {
     state,
     isLoading: persistence.isLoading,
@@ -218,6 +241,7 @@ export function DocumentsProvider({ children }) {
     updateDocument,
     deleteDocument,
     selectDocument,
+    fetchDocumentContent,
     getNextUntitledName,
   };
 

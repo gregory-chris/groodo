@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Save, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { Save, AlertCircle, Loader2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { useDocumentsContext } from '../context/DocumentsContext';
 import WysiwygEditor from '../../projects/components/WysiwygEditor';
@@ -8,19 +8,39 @@ import WysiwygEditor from '../../projects/components/WysiwygEditor';
  * DocumentEditor - Main panel for editing document title and content
  */
 function DocumentEditor() {
-  const { state, updateDocument } = useDocumentsContext();
+  const { state, updateDocument, fetchDocumentContent } = useDocumentsContext();
   const [editedData, setEditedData] = useState({ title: '', content: '' });
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
   const titleInputRef = useRef(null);
   const prevSelectedIdRef = useRef(null);
 
   const selectedDocument = state.documents.find(d => d.id === state.selectedDocumentId);
 
-  // Initialize edited data when selection changes
-  useEffect(() => {
+  // Fetch document content from server when selection changes
+  const loadDocumentContent = useCallback(async (documentId) => {
+    setIsLoadingContent(true);
     setIsInitialized(false);
     
+    try {
+      const result = await fetchDocumentContent(documentId);
+      
+      if (result.success && result.document) {
+        setEditedData({
+          title: result.document.title || '',
+          content: result.document.content || '',
+        });
+      }
+    } finally {
+      setIsLoadingContent(false);
+      setIsInitialized(true);
+    }
+  }, [fetchDocumentContent]);
+
+  // Initialize edited data when selection changes
+  useEffect(() => {
     if (selectedDocument) {
+      // Set initial data from local state (may not have content yet)
       setEditedData({
         title: selectedDocument.title || '',
         content: selectedDocument.content || '',
@@ -30,27 +50,29 @@ function DocumentEditor() {
       const isNewSelection = prevSelectedIdRef.current !== selectedDocument.id;
       const isNewDocument = selectedDocument.title?.startsWith('Untitled ');
       
-      // Auto-select title for new documents
-      if (isNewSelection && isNewDocument && titleInputRef.current) {
-        // Use setTimeout to ensure the input is rendered and focused
-        setTimeout(() => {
-          if (titleInputRef.current) {
-            titleInputRef.current.focus();
-            titleInputRef.current.select();
-          }
-        }, 50);
+      if (isNewSelection) {
+        // Fetch full content from server
+        loadDocumentContent(selectedDocument.id);
+        
+        // Auto-select title for new documents
+        if (isNewDocument && titleInputRef.current) {
+          // Use setTimeout to ensure the input is rendered and focused
+          setTimeout(() => {
+            if (titleInputRef.current) {
+              titleInputRef.current.focus();
+              titleInputRef.current.select();
+            }
+          }, 50);
+        }
       }
       
       prevSelectedIdRef.current = selectedDocument.id;
     } else {
       setEditedData({ title: '', content: '' });
       prevSelectedIdRef.current = null;
+      setIsInitialized(true);
     }
-    
-    // Set initialized after a short delay to allow state to settle
-    const timer = setTimeout(() => setIsInitialized(true), 100);
-    return () => clearTimeout(timer);
-  }, [selectedDocument?.id]);
+  }, [selectedDocument?.id, loadDocumentContent]);
 
   const handleSave = () => {
     if (selectedDocument) {
@@ -87,7 +109,13 @@ function DocumentEditor() {
       <div className="h-16 px-4 border-b border-gray-200 flex-shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-gray-900">Document</h2>
-          {hasUnsavedChanges && (
+          {isLoadingContent && (
+            <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Loading...
+            </span>
+          )}
+          {!isLoadingContent && hasUnsavedChanges && (
             <span className="flex items-center gap-1.5 text-xs font-bold text-white bg-amber-500 px-3 py-1 rounded-full shadow-sm animate-pulse">
               <AlertCircle className="w-3.5 h-3.5" />
               Unsaved Changes
@@ -96,7 +124,8 @@ function DocumentEditor() {
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#701E2E] hover:bg-[#8B2639] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#701E2E]"
+          disabled={isLoadingContent}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#701E2E] hover:bg-[#8B2639] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#701E2E] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           Save
@@ -132,6 +161,7 @@ function DocumentEditor() {
               value={editedData.content || ''}
               onChange={(content) => setEditedData({ ...editedData, content: content })}
               placeholder="Start writing..."
+              disabled={isLoadingContent}
             />
           </div>
         </div>
