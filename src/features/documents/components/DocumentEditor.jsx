@@ -105,7 +105,7 @@ function DocumentEditor() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="space-y-6 max-w-4xl">
+        <div className="space-y-6">
           {/* Document Title */}
           <div>
             <label htmlFor="document-title" className="block text-sm font-medium text-gray-700 mb-2">
