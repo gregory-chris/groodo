@@ -581,6 +581,33 @@ body {
   background: white;
 }
 
+/* Full height variant for document editor */
+.wysiwyg-editor-wrapper.h-full {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wysiwyg-editor-wrapper.h-full .wysiwyg-toolbar {
+  flex-shrink: 0;
+}
+
+.wysiwyg-editor-wrapper.h-full .tiptap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.wysiwyg-editor-wrapper.h-full .wysiwyg-editor-content,
+.wysiwyg-editor-wrapper.h-full .ProseMirror {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+}
+
 .wysiwyg-editor-wrapper:focus-within {
   border-color: #701E2E;
   box-shadow: 0 0 0 3px rgba(112, 30, 46, 0.1);

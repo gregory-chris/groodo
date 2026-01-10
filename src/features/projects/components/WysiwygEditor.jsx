@@ -30,7 +30,7 @@ const extensions = [
  * WysiwygEditor - Reusable WYSIWYG editor component using TipTap
  * Simple toolbar with headings, basic formatting, lists, indentation, and code
  */
-function WysiwygEditor({ value, onChange, placeholder, id, disabled }) {
+function WysiwygEditor({ value, onChange, placeholder, id, disabled, className }) {
   const onChangeRef = useRef(onChange);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ function WysiwygEditor({ value, onChange, placeholder, id, disabled }) {
 
   return (
     <div 
-      className={`wysiwyg-editor-wrapper ${disabled ? 'opacity-50 pointer-events-none' : ''}`} 
+      className={`wysiwyg-editor-wrapper ${disabled ? 'opacity-50 pointer-events-none' : ''} ${className || ''}`} 
       id={id}
     >
       {/* Toolbar */}
@@ -209,6 +209,7 @@ WysiwygEditor.propTypes = {
   placeholder: PropTypes.string,
   id: PropTypes.string,
   disabled: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 WysiwygEditor.defaultProps = {
@@ -216,6 +217,7 @@ WysiwygEditor.defaultProps = {
   placeholder: '',
   id: undefined,
   disabled: false,
+  className: '',
 };
 
 export default WysiwygEditor;

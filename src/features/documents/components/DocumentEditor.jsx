@@ -133,35 +133,36 @@ function DocumentEditor() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="space-y-6">
-          {/* Document Title */}
-          <div>
-            <label htmlFor="document-title" className="block text-sm font-medium text-gray-700 mb-2">
-              Title
-            </label>
-            <input
-              ref={titleInputRef}
-              id="document-title"
-              type="text"
-              value={editedData.title || ''}
-              onChange={(e) => setEditedData({ ...editedData, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#701E2E] focus:border-transparent text-lg"
-              placeholder="Enter document title"
-            />
-          </div>
+      <div className="flex-1 flex flex-col min-h-0 p-6">
+        {/* Document Title */}
+        <div className="flex-shrink-0 mb-6">
+          <label htmlFor="document-title" className="block text-sm font-medium text-gray-700 mb-2">
+            Title
+          </label>
+          <input
+            ref={titleInputRef}
+            id="document-title"
+            type="text"
+            value={editedData.title || ''}
+            onChange={(e) => setEditedData({ ...editedData, title: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#701E2E] focus:border-transparent text-lg"
+            placeholder="Enter document title"
+          />
+        </div>
 
-          {/* Document Content */}
-          <div>
-            <label htmlFor="document-content" className="block text-sm font-medium text-gray-700 mb-2">
-              Content
-            </label>
+        {/* Document Content */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <label htmlFor="document-content" className="block text-sm font-medium text-gray-700 mb-2 flex-shrink-0">
+            Content
+          </label>
+          <div className="flex-1 min-h-0 overflow-hidden">
             <WysiwygEditor
               id="document-content"
               value={editedData.content || ''}
               onChange={(content) => setEditedData({ ...editedData, content: content })}
               placeholder="Start writing..."
               disabled={isLoadingContent}
+              className="h-full"
             />
           </div>
         </div>
