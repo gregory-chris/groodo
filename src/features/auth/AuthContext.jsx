@@ -115,16 +115,16 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
-  // Show sign-up modal automatically in guest mode if needed (on initial load)
+  // Show sign-in modal automatically in guest mode if needed (on initial load)
   useEffect(() => {
     if (state.status === 'guest' && !modalState.open) {
       if (shouldShowSignupModal()) {
-        openAuthModal('sign-up');
+        openAuthModal('sign-in');
       }
     }
   }, [state.status, openAuthModal]);
 
-  // Periodic check for sign-up modal appearance (every 2 minutes)
+  // Periodic check for login modal appearance (every 2 minutes)
   useEffect(() => {
     // Only run periodic checks in guest mode
     if (state.status !== 'guest') {
@@ -135,7 +135,7 @@ export function AuthProvider({ children }) {
     // Use ref to always get current modal state
     const checkAndShowModal = () => {
       if (!modalStateRef.current.open && shouldShowSignupModal()) {
-        openAuthModal('sign-up');
+        openAuthModal('sign-in');
       }
     };
 
