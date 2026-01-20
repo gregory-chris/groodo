@@ -592,20 +592,30 @@ body {
   flex-shrink: 0;
 }
 
-.wysiwyg-editor-wrapper.h-full .tiptap {
+/* Scroll container for the editor content */
+.wysiwyg-editor-scroll-container {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.wysiwyg-editor-wrapper.h-full .wysiwyg-editor-scroll-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.wysiwyg-editor-wrapper.h-full .tiptap {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .wysiwyg-editor-wrapper.h-full .wysiwyg-editor-content,
 .wysiwyg-editor-wrapper.h-full .ProseMirror {
   flex: 1;
-  min-height: 0;
+  min-height: 100%;
   max-height: none;
-  overflow-y: auto;
 }
 
 .wysiwyg-editor-wrapper:focus-within {
@@ -780,21 +790,25 @@ body {
 }
 
 /* Scrollbar styling for editor */
-.wysiwyg-editor-content::-webkit-scrollbar {
+.wysiwyg-editor-content::-webkit-scrollbar,
+.wysiwyg-editor-scroll-container::-webkit-scrollbar {
   width: 6px;
 }
 
-.wysiwyg-editor-content::-webkit-scrollbar-track {
+.wysiwyg-editor-content::-webkit-scrollbar-track,
+.wysiwyg-editor-scroll-container::-webkit-scrollbar-track {
   background: #f8fafc;
   border-radius: 3px;
 }
 
-.wysiwyg-editor-content::-webkit-scrollbar-thumb {
+.wysiwyg-editor-content::-webkit-scrollbar-thumb,
+.wysiwyg-editor-scroll-container::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 3px;
 }
 
-.wysiwyg-editor-content::-webkit-scrollbar-thumb:hover {
+.wysiwyg-editor-content::-webkit-scrollbar-thumb:hover,
+.wysiwyg-editor-scroll-container::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
 }
 

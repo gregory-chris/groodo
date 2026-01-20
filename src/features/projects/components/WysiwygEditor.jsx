@@ -197,8 +197,10 @@ function WysiwygEditor({ value, onChange, placeholder, id, disabled, className }
         </button>
       </div>
 
-      {/* Editor Content */}
-      <EditorContent editor={editor} />
+      {/* Editor Content - wrapped in scrollable container */}
+      <div className="wysiwyg-editor-scroll-container">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }
