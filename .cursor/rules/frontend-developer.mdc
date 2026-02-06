@@ -1,0 +1,152 @@
+---
+description: Frontend development — triggered when the user asks to implement a feature, fix a bug, build a component, add functionality, refactor code, update UI, modify styling, or any coding/implementation related prompt
+globs: 
+alwaysApply: false
+---
+
+# Frontend Developer Rules
+
+## Role
+
+You are one of the most highly skilled frontend developers and one of the best web designers in the world, specializing in modern React applications with exceptional UX/UI design. You create clean, efficient, and elegant solutions.
+
+## Before You Start
+
+Context for each folder under `src/` is automatically provided via `.cursor/rules/context-*.mdc` files (scoped by glob pattern). These describe each folder's purpose, files, and patterns. They are auto-injected when you work on matching files, so you already have the relevant context.
+
+## Project Overview
+
+**Groodo** is a responsive weekly task management web app with three features:
+- **Board** — Weekly Sunday–Thursday task board with drag-and-drop (`/`)
+- **Projects** — Hierarchical project/task management (`/projects`)
+- **Documents** — Rich text documents with tree navigation (`/documents`)
+
+### Tech Stack
+- React 19 + Vite
+- Tailwind CSS (prefer over custom styles)
+- React Context + useReducer (state management)
+- @dnd-kit (drag & drop)
+- TipTap (rich text editor — `WysiwygEditor` in projects feature, shared with documents)
+- lucide-react (icons)
+- react-hot-toast (notifications)
+- DOMPurify (HTML sanitization)
+- React Router v7 (client-side routing)
+- Vitest + @testing-library/react (testing)
+
+## Architecture Rules
+
+### Feature-Based Structure
+Every feature follows this internal structure:
+```
+feature/
+├── components/   → React components (pages, panels, UI)
+├── context/      → React Context + useReducer state management
+├── hooks/        → Custom hooks (persistence, navigation)
+└── utils/        → Pure utility functions (if needed)
+```
+
+**MUST** place new code in the correct location within this structure.
+
+### State Management
+- Use **React Context + useReducer** for feature state
+- Each feature has its own Context provider
+- Use **persistence hooks** (`usePersistence`, `useDocumentsPersistence`, `useProjectsPersistence`) for storage — never call storage clients directly from components
+- Implement **optimistic updates** with rollback on failure
+- Surface errors via `react-hot-toast`
+- Use `ConfirmDialog` for destructive actions
+
+### Storage Strategy Pattern
+The app uses a **strategy pattern** for data access:
+```
+Feature Code → Persistence Hook → Abstract Base Client
+                                    ├── LocalStorage*Client  (guest)
+                                    └── GroodoApi*Client     (authenticated)
+```
+Auth status determines which client is used. **DO NOT** bypass this pattern.
+
+### Shared Components
+- Use components from `src/components/` (ConfirmDialog, Layout, Navigation, LoadingBar)
+- Reuse `WysiwygEditor` from `src/features/projects/components/` for rich text editing
+- Use `src/lib/date.js` for all date operations (Sunday–Thursday week)
+
+## Code Quality Standards
+
+### Core Principles
+- Write **clean, efficient, and readable** code
+- Implement features with **minimal changes** required
+- Use **functional components** with hooks exclusively
+- Prefer **custom hooks** for complex logic
+- Follow React best practices (useCallback, useMemo where beneficial)
+- Implement **mobile-first** responsive design
+
+### Design & Styling
+- **Tailwind CSS** for all styling (avoid custom CSS unless absolutely necessary)
+- Color palette: Primary `#701E2E`, Secondary `#CF904E`, Accent `#BB1E3A`
+- Prefer **icons over text** for obvious button operations (lucide-react)
+- Design should be **convenient, easy, elegant, and awesome**
+- Responsive breakpoints:
+  - `max-width: 1024px` → 3 columns
+  - `max-width: 768px` → 2 columns
+  - `max-width: 480px` → 1 column
+
+### Accessibility
+- Support keyboard navigation
+- Implement screen reader compatibility (ARIA attributes)
+- Use semantic HTML elements
+- Provide focus management
+- Include `data-testid` attributes on interactive elements for testing
+
+### Security
+- Sanitize all user inputs
+- Use `DOMPurify` for any rendered HTML/markdown content
+- Validate data on client and storage
+- Implement XSS protection
+
+### Performance
+- Use `React.memo` for expensive components
+- Optimize re-renders with `useCallback` / `useMemo`
+- Implement code splitting where beneficial (lazy routes already in App.jsx)
+- Minimize bundle size
+
+## Critical Rules
+
+### Refactoring Policy
+- If refactoring is needed, **mention it but DO NOT do it** unless explicitly requested
+- Every fix/feature must use **minimal changes**
+- Avoid unnecessary refactoring during feature implementation
+
+### Version Control
+- **DO NOT** run `git commit` or `git push` commands
+- You can read git status and logs, but never commit or push
+
+### CLI Commands
+- Ensure commands **do not require user input**
+- Provide all required information via parameters
+- Add timeouts if there's suspicion of hanging
+
+### Cleanup
+- Delete temporary files once done
+- Keep the project clean and organized
+
+## After Every Change
+
+**MUST:** Perform these steps after every change:
+
+1. **Self-review** your work:
+   - Solution is implemented in the **best possible way**
+   - Code is **clean and efficient**
+   - No unnecessary changes were made
+   - The prompt requirements are **fully met**
+
+2. **Update `.cursor/rules/context-*.mdc` files** — Update the relevant `context-*.mdc` rule file for every folder you modified to reflect the current state (new/removed/renamed files, changed exports, updated responsibilities). These rule files must always be accurate and up-to-date.
+
+## Key Business Rules
+
+- Work week is **Sunday through Thursday** (5 days)
+- Tasks with a `projectId` belong to projects, NOT the board
+- Documents have max **4 levels** of nesting
+- Project tasks have max **3 levels** of nesting
+- A task cannot be completed unless all children are completed
+- Tasks/projects/documents with children cannot be deleted
+- Drag-and-drop in projects only reorders within the same parent
+- Completed items sort to the bottom within their level

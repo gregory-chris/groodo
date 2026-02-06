@@ -1,0 +1,45 @@
+---
+description: Context for the projects feature — auto-included when working on project files
+globs: src/features/projects/**
+alwaysApply: false
+---
+
+# features/projects/ — Projects
+
+## Overview
+
+Project management feature with hierarchical tasks. Three-panel layout: project list, task tree, and details panel. Tasks support nesting, drag-and-drop reordering, and completion tracking.
+
+## Structure
+
+### components/
+- **ProjectsPage.jsx** — Page layout with three panels: sidebar, tasks, details. Responsive (stacks on mobile). Wrapped in `ProjectsProvider`.
+- **ProjectsSidebar.jsx** — Lists all projects. Supports creating new projects. Shows project name and truncated description.
+- **TasksPanel.jsx** — Hierarchical task tree for the selected project. Supports adding root tasks and subtasks, expanding/collapsing, toggling completion, and drag-and-drop reordering via `TasksDragProvider`. Expand/collapse state persisted in localStorage.
+- **TasksDragProvider.jsx** — `@dnd-kit` drag-and-drop context for task reordering within the same parent level. Reorders siblings and updates order values.
+- **DetailsPanel.jsx** — Edit panel for the selected project or task. Shows name/title and rich text description/content. Supports delete with confirmation and validation (e.g., can't delete projects/tasks with children).
+- **WysiwygEditor.jsx** — Reusable TipTap-based rich text editor. Toolbar with headings, bold/italic/underline, lists, code blocks, and quotes. **Shared with documents feature**.
+
+### context/
+- **ProjectsContext.jsx** — State management via `useReducer`. Manages `projects[]`, `tasks[]`, `selectedProjectId`, `selectedTaskId`. Provides CRUD for both projects and tasks, plus `moveTask` and `toggleTaskComplete`. Persists selection to localStorage.
+
+### hooks/
+- **useProjectsPersistence.js** — Persistence hook. Uses `GroodoProjectsClient` + `GroodoApiClient` (authenticated) or `LocalStorageProjectsClient` + `LocalStorageClient` (guest). Loads projects and tasks together. Validates and restores selections from localStorage.
+
+### utils/
+- **taskHierarchy.js** — Pure utility functions for hierarchical task operations:
+  - `buildTaskTree` — Converts flat task list into nested tree
+  - `canAddSubTask` — Checks max nesting level (3)
+  - `canCompleteTask` — All children must be completed first
+  - `canDeleteTask` / `canDeleteProject` — Can't delete if has children/tasks
+  - `getAllDescendants` — Gets all nested children recursively
+  - `reorderTasks` — Reorders siblings after drag-and-drop
+
+## Key Business Rules
+
+- Tasks are hierarchical with a maximum nesting depth of **3 levels**
+- A task cannot be completed unless all its children are completed
+- Tasks/projects with children cannot be deleted (must delete children first)
+- Drag-and-drop only reorders within the same parent (no moving between parents)
+- Completed tasks sort to the bottom within their level
+- Project tasks are separate from board tasks (they have a `projectId`)

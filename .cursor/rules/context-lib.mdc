@@ -1,0 +1,52 @@
+---
+description: Context for the storage, API clients, and utilities layer — auto-included when working on lib files
+globs: src/lib/**
+alwaysApply: false
+---
+
+# lib/ — Storage, API Clients & Utilities
+
+## Overview
+
+Contains all data access logic, API communication, and shared utility functions. The core pattern is a **strategy-based storage layer** that switches between localStorage (guest) and API (authenticated) without changing consuming code.
+
+## Architecture
+
+```
+Feature Code
+    ↓
+Abstract Base Client (interface)
+    ├── LocalStorage*Client  (guest users)
+    └── GroodoApi*Client     (authenticated users)
+            ↓
+        Low-level API modules (HTTP calls)
+```
+
+## Storage Clients
+
+### Base Classes (interfaces)
+- `taskStorageClient.js` — Defines: `listTasks`, `createTask`, `updateTask`, `deleteTask`
+- `documentStorageClient.js` — Defines: `listDocuments`, `getDocument`, `createDocument`, `updateDocument`, `deleteDocument`
+- `projectStorageClient.js` — Defines: `listProjects`, `getProject`, `createProject`, `updateProject`, `deleteProject`, `getProjectTasks`
+
+### Concrete Implementations (`clients/`)
+- `LocalStorageClient` / `LocalStorageDocumentsClient` / `LocalStorageProjectsClient` — Persist to browser localStorage
+- `GroodoApiClient` / `GroodoDocumentsClient` / `GroodoProjectsClient` — Persist via REST API, include data transformation between API and internal formats
+
+### Low-level API Modules
+- `groodoApiTasksClient.js` — HTTP calls for tasks
+- `groodoApiDocumentsClient.js` — HTTP calls for documents
+- `groodoApiProjectsClient.js` — HTTP calls for projects
+
+Each handles auth token injection and sliding expiration via `touchCookie`.
+
+## Auth
+
+- `authClient.js` — `signIn`, `signUp`, `signOut`, `getMe`, `getToken` functions
+- `cookies.js` — Cookie utilities with sliding expiration for auth tokens
+
+## Utilities
+
+- `config.js` — API host configuration, auto-detects dev vs production
+- `date.js` — Date utilities for the **Sunday–Thursday work week**: week bounds, navigation, formatting, date keys
+- `storage.js` — localStorage persistence with **data versioning and migration** support (used by board tasks)

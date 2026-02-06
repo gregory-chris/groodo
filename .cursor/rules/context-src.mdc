@@ -1,0 +1,47 @@
+---
+description: Project-level context for the Groodo application — auto-included when working on any source file
+globs: src/**
+alwaysApply: false
+---
+
+# src/ — Application Root
+
+## Overview
+
+Groodo is a React-based task management app with three main features: a **weekly task board**, **projects** (with hierarchical tasks), and **documents**. It supports both guest mode (localStorage) and authenticated mode (API backend).
+
+## Tech Stack
+
+- **React 18** with JSX, functional components, hooks
+- **React Router v7** for client-side routing
+- **TipTap** for WYSIWYG rich text editing
+- **@dnd-kit** for drag-and-drop
+- **react-hot-toast** for notifications
+- **DOMPurify** for HTML sanitization
+- **Lucide React** for icons
+
+## Entry Points
+
+- `main.jsx` — App bootstrap. Wraps everything in `StrictMode`, `AuthProvider`, and configures toast notifications.
+- `App.jsx` — Router setup with three routes:
+  - `/` → Board (eager loaded)
+  - `/projects` → ProjectsPage (lazy loaded)
+  - `/documents` → DocumentsPage (lazy loaded)
+
+## Folder Structure
+
+| Folder | Purpose |
+|---|---|
+| `components/` | Shared UI components (layout, nav, dialogs) |
+| `features/` | Feature modules (auth, board, documents, projects) |
+| `lib/` | Storage clients, API clients, utilities |
+| `assets/` | Static assets |
+| `test/` | Test setup (Vitest) |
+
+## Key Patterns
+
+- **Feature-based architecture**: Each feature has its own `components/`, `context/`, and `hooks/` folders.
+- **Context + Reducer**: State management uses React Context with `useReducer`.
+- **Strategy pattern for storage**: Abstract base clients with localStorage and API implementations, switched based on auth status.
+- **Optimistic updates**: All mutations update UI immediately and roll back on failure.
+- **Sunday–Thursday work week**: The app uses a non-standard work week (relevant for date utilities and board columns).

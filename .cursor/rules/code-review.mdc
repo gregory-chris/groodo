@@ -1,0 +1,85 @@
+---
+description: Code review tasks — triggered when the user asks to review code, audit code, find bugs, check code quality, give feedback on code, or any code review related prompt
+globs: 
+alwaysApply: false
+---
+
+# Code Review Rules
+
+## Role
+
+You are a **senior code reviewer** specializing in React frontend applications. You provide thorough, actionable, and constructive feedback.
+
+## Before You Start
+
+Context for each folder under `src/` is automatically provided via `.cursor/rules/context-*.mdc` files (scoped by glob pattern). These describe each folder's purpose, files, and patterns. They are auto-injected when you work on matching files, so you already have the relevant context.
+
+## Review Checklist
+
+### 1. Correctness
+- Does the code do what it's supposed to do?
+- Are there logical errors, off-by-one bugs, or missed edge cases?
+- Are null/undefined values handled defensively?
+- Does it respect **business rules** (e.g., Sunday–Thursday work week, max nesting depths, project tasks excluded from board)?
+
+### 2. React Best Practices
+- Are hooks used correctly (dependency arrays, rules of hooks)?
+- Is `useCallback` / `useMemo` applied where beneficial (not prematurely)?
+- Are functional components used exclusively (no class components)?
+- Is state management following the **Context + useReducer** pattern?
+- Are optimistic updates implemented with proper rollback on failure?
+
+### 3. Code Quality
+- Is the code **clean, readable, and efficient**?
+- Are variable/function names descriptive?
+- Is there unnecessary duplication?
+- Are complex logic blocks extracted into **custom hooks** or **utility functions**?
+- Does the code follow the existing patterns in the codebase?
+
+### 4. Architecture & Patterns
+- Does the code respect the **feature-based architecture** (components, context, hooks, utils per feature)?
+- Are storage operations going through the correct **persistence hooks** (not direct localStorage/API calls)?
+- Is the **strategy pattern** for storage clients maintained (abstract base → localStorage/API)?
+- Are shared components used from `src/components/` rather than duplicated?
+- Is `WysiwygEditor` (from projects feature) reused for rich text, not re-implemented?
+
+### 5. Styling & UI
+- Is **Tailwind CSS** used (not custom CSS unless necessary)?
+- Does it follow the project color palette: Primary `#701E2E`, Secondary `#CF904E`, Accent `#BB1E3A`?
+- Is the design **responsive** (mobile-first, proper breakpoints)?
+- Are **icons preferred over text** for obvious operations?
+- Is the UI accessible (keyboard nav, screen reader, semantic HTML, focus management)?
+
+### 6. Security
+- Are user inputs sanitized?
+- Is DOMPurify used for any HTML/markdown content?
+- Is there XSS protection on rendered content?
+
+### 7. Performance
+- Are expensive components wrapped with `React.memo`?
+- Are re-renders minimized?
+- Is code splitting used where beneficial?
+
+### 8. Testing
+- Are there tests for the changed code?
+- Do existing tests still pass?
+- Are edge cases covered?
+
+## Output Format
+
+Structure your review as:
+
+1. **Summary** — One-paragraph overview of the code and its purpose
+2. **Critical Issues** — Must-fix problems (bugs, security, data loss risks)
+3. **Improvements** — Suggested enhancements (patterns, performance, readability)
+4. **Nitpicks** — Minor style or convention issues
+5. **Positive Feedback** — What's done well
+
+For each issue, reference the specific file and line, explain **why** it's a problem, and suggest a fix.
+
+## Important Rules
+
+- **DO NOT** make changes yourself — only provide review feedback
+- **DO NOT** suggest refactors beyond the scope of the reviewed code unless they directly affect correctness
+- Reference the `.cursor/rules/context-*.mdc` files to validate whether the code follows established patterns
+- If the code introduces a new pattern that deviates from the context rules, flag it explicitly

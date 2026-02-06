@@ -40,6 +40,7 @@ src/
 
 ### Documentation
 - **DO NOT** create MD files unless explicitly requested in the prompt
+- **MUST:** Context for each folder under `src/` is maintained in `.cursor/rules/context-*.mdc` files. After **every change**, you **must** update the relevant `context-*.mdc` rule file to reflect the current state of that folder (new/removed/renamed files, changed exports, updated responsibilities, etc.). These files must always be kept accurate and up-to-date.
 
 ### Version Control
 - **DO NOT** run `git commit` or `git push` commands

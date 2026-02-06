@@ -1,0 +1,142 @@
+---
+description: Unit test writing — triggered when the user asks to write unit tests, add unit tests, create tests for a function/hook/utility, test a component in isolation, or any unit testing related prompt
+globs: 
+alwaysApply: false
+---
+
+# Unit Test Writer Rules
+
+## Role
+
+You are an expert **unit test writer** for a React frontend application using **Vitest** and **@testing-library/react**.
+
+## Before You Start
+
+Context for each folder under `src/` is automatically provided via `.cursor/rules/context-*.mdc` files (scoped by glob pattern). These describe each folder's purpose, files, and patterns. They are auto-injected when you work on matching files, so you already have the relevant context.
+
+## Tech Stack & Setup
+
+- **Test runner:** Vitest (with `globals: true`, so `describe`, `it`, `expect` are global)
+- **DOM environment:** jsdom
+- **Assertion library:** `@testing-library/jest-dom` (extended matchers like `toBeInTheDocument`)
+- **Component testing:** `@testing-library/react` (`render`, `screen`, `fireEvent`, `act`, `waitFor`)
+- **User events:** `@testing-library/user-event` (available for more realistic interactions)
+- **Mocking:** `vi.mock()`, `vi.fn()`, `vi.spyOn()` from Vitest
+- **Setup file:** `src/test/setup.js` — pre-mocks `useAuth` and `useTaskStorageContext`
+
+## What Unit Tests Cover
+
+Unit tests focus on **individual units in isolation**:
+- **Utility functions** (e.g., `date.js`, `storage.js`, `taskHierarchy.js`)
+- **Custom hooks** (e.g., `usePersistence.js`, `useWeekNavigation.js`, `useDocumentsPersistence.js`)
+- **Individual components** rendered in isolation with mocked dependencies
+- **Context reducers** — testing state transitions via dispatched actions
+- **Pure logic** — any function that takes input and returns output
+
+## File Naming & Location
+
+- Test files live **next to the source file** they test
+- Naming convention: `<SourceFile>.test.jsx` or `<SourceFile>.test.js`
+- Examples:
+  - `TaskCard.jsx` → `TaskCard.test.jsx`
+  - `date.js` → `date.test.js`
+  - `usePersistence.js` → `usePersistence.test.js`
+
+## Test Structure
+
+Follow the existing codebase conventions:
+
+```jsx
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+
+// Mock external dependencies BEFORE imports of the module under test
+vi.mock('dependency-path', () => ({
+  exportedFn: vi.fn(),
+}));
+
+describe('ComponentOrFunction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Category (e.g., Rendering, Interactions, Edge Cases)', () => {
+    it('should describe expected behavior', () => {
+      // Arrange → Act → Assert
+    });
+  });
+});
+```
+
+## Mocking Patterns
+
+### External Libraries
+Mock `@dnd-kit`, `react-router-dom`, `react-hot-toast`, `@tiptap/react` etc. when testing components that use them:
+
+```jsx
+vi.mock('@dnd-kit/sortable', () => ({
+  useSortable: vi.fn(() => ({
+    attributes: { role: 'button', tabIndex: 0 },
+    listeners: {},
+    setNodeRef: vi.fn(),
+    transform: null,
+    transition: null,
+    isDragging: false,
+  })),
+}));
+```
+
+### Context Providers
+Wrap components in their required Context providers for testing:
+
+```jsx
+function TestWrapper({ children }) {
+  return <BoardProvider>{children}</BoardProvider>;
+}
+
+render(<TestWrapper><ComponentUnderTest /></TestWrapper>);
+```
+
+### Storage & API Clients
+Mock storage modules when testing persistence hooks or context:
+
+```jsx
+vi.mock('../../../lib/storage.js');
+// Then in beforeEach:
+storage.loadState.mockReturnValue(initialState);
+```
+
+### Auth Context
+Auth is pre-mocked in `src/test/setup.js`. Override per-test if needed:
+
+```jsx
+mockUseAuth.mockReturnValue({ ...defaults, isAuthenticated: true });
+```
+
+## Test Categories to Cover
+
+For each unit, write tests grouped into these categories:
+
+1. **Rendering** — Does it render correctly with default/various props?
+2. **Behavior** — Do interactions (click, type, submit) trigger the right callbacks/state changes?
+3. **State transitions** — Does the reducer/hook update state correctly for each action?
+4. **Edge cases** — Empty inputs, missing props, boundary values, error conditions
+5. **Accessibility** — ARIA attributes, keyboard navigation, focus management
+6. **Error handling** — Graceful handling of storage errors, missing data, invalid inputs
+
+## Test Quality Standards
+
+- Each test should test **one thing** (single assertion focus)
+- Use `data-testid` attributes for querying (consistent with existing tests)
+- Prefer `screen.getByTestId()` over container queries
+- Use `fireEvent` for simple interactions, `userEvent` for complex ones
+- Use `act()` and `waitFor()` for async state updates
+- **DO NOT** test implementation details (internal state, private methods)
+- **DO** test observable behavior (rendered output, called callbacks, state changes)
+- Mock at the boundary (network, storage, external libs) — not internal modules
+
+## After Writing Tests
+
+- **MUST:** Update the relevant `.cursor/rules/context-*.mdc` files if new test files were created
+- Run `npx vitest run <path-to-test-file>` to verify all tests pass
+- Ensure no existing tests are broken

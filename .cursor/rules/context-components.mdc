@@ -1,0 +1,40 @@
+---
+description: Context for shared UI components — auto-included when working on shared components
+globs: src/components/**
+alwaysApply: false
+---
+
+# components/ — Shared UI Components
+
+## Overview
+
+Reusable components used across the app. Not tied to any specific feature.
+
+## Components
+
+### ConfirmDialog
+Modal confirmation dialog with variant styling (`danger`, `warning`, `info`). Includes focus trap, Escape to close, and click-outside dismiss. Used before destructive actions like deleting tasks or documents.
+
+### Header (root)
+Top-level app header. Shows the "GrooDo" brand, today's date, a loading bar, and user menu (sign in/out). Integrates with `useAuth` context.
+
+### Navigation
+Horizontal tab navigation for the three main routes: Weekly Tasks (`/`), Projects (`/projects`), Documents (`/documents`). Highlights the active route.
+
+### LoadingBar
+Thin animated bar fixed at the top of the page. Shown during async operations via the `isLoading` prop.
+
+### Layout/
+A set of layout primitives:
+- **Layout** — Standard page shell: Header + content + Footer
+- **FullWidthLayout** — Same but without content width constraints
+- **MinimalLayout** — Header + content, no footer
+- **ContentContainer** — Responsive width container (small/default/large)
+- **Section** — Content section with optional title, description, and action slot
+- **Card** — Card wrapper with padding and shadow variants
+
+### Layout/Header
+Alternative header component using Tailwind-based styling. Similar to root Header but with a different visual approach.
+
+### Layout/Footer
+App footer with links (About, Help, Feedback), copyright, and info badges ("Sunday–Thursday work week", "Data stored locally").

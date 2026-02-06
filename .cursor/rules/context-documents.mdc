@@ -1,0 +1,32 @@
+---
+description: Context for the documents feature — auto-included when working on document files
+globs: src/features/documents/**
+alwaysApply: false
+---
+
+# features/documents/ — Documents
+
+## Overview
+
+A rich text document editor with a tree-structured sidebar. Users can create, edit, rename, and delete documents organized in a nested hierarchy.
+
+## Structure
+
+### components/
+- **DocumentsPage.jsx** — Page layout with two panels: sidebar + editor. Wrapped in `DocumentsProvider`.
+- **DocumentsSidebar.jsx** — Tree view of documents. Supports creating new documents (including children), deleting with confirmation, and expanding/collapsing nodes. Max nesting level: **4**. Cannot delete documents that have children.
+- **DocumentEditor.jsx** — Editing panel for the selected document's title and content. Uses `WysiwygEditor` (from projects feature). Loads full content on selection change. Sanitizes HTML with DOMPurify before saving.
+
+### context/
+- **DocumentsContext.jsx** — State management via `useReducer`. Manages `documents[]`, `selectedDocumentId`, `deletingDocumentIds[]`. Provides CRUD actions and `fetchDocumentContent`. Persists selected document ID to localStorage.
+
+### hooks/
+- **useDocumentsPersistence.js** — Persistence hook. Switches between `GroodoDocumentsClient` (authenticated) and `LocalStorageDocumentsClient` (guest). Handles optimistic updates with rollback.
+
+## Key Business Rules
+
+- Documents are organized in a tree (parent-child hierarchy)
+- Maximum nesting depth is 4 levels
+- Documents with children cannot be deleted (must delete children first)
+- New documents auto-named "Untitled Document" with incrementing numbers
+- Expand/collapse state persisted in localStorage

@@ -1,0 +1,36 @@
+---
+description: Context for the features layer — auto-included when working on any feature module
+globs: src/features/**
+alwaysApply: false
+---
+
+# features/ — Feature Modules
+
+## Overview
+
+Each feature is a self-contained module following a consistent internal structure:
+
+```
+feature/
+├── components/   → React components (pages, panels, UI)
+├── context/      → React Context + useReducer state management
+├── hooks/        → Custom hooks (persistence, navigation)
+└── utils/        → Pure utility functions (projects only)
+```
+
+## Features
+
+| Feature | Route | Purpose |
+|---|---|---|
+| **auth** | N/A (modal) | User authentication (sign in, sign up, sign out) |
+| **board** | `/` | Weekly task board with drag-and-drop columns |
+| **documents** | `/documents` | Rich text document editor with tree navigation |
+| **projects** | `/projects` | Project management with hierarchical tasks |
+
+## Shared Patterns
+
+- **Context + Reducer**: Each feature manages state via `useReducer` inside a Context provider.
+- **Persistence hooks**: Each feature has a `usePersistence` hook that selects the right storage client (localStorage vs API) based on auth status.
+- **Optimistic updates**: UI updates immediately; rolls back on API failure.
+- **Toast notifications**: Errors surfaced via `react-hot-toast`.
+- **Confirm dialogs**: Destructive actions require confirmation via `ConfirmDialog`.
