@@ -13,12 +13,12 @@ A rich text document editor with a tree-structured sidebar. Users can create, ed
 ## Structure
 
 ### components/
-- **DocumentsPage.jsx** — Page layout with two panels: sidebar + editor. Wrapped in `DocumentsProvider`.
+- **DocumentsPage.jsx** — Page layout with two panels: sidebar + editor. Wrapped in `DocumentsProvider`. Uses `useBlocker` from React Router to block SPA navigation when there are unsaved changes (shows `window.confirm` dialog).
 - **DocumentsSidebar.jsx** — Tree view of documents. Supports creating new documents (including children), deleting with confirmation, and expanding/collapsing nodes. Max nesting level: **4**. Cannot delete documents that have children.
-- **DocumentEditor.jsx** — Editing panel for the selected document's title and content. Uses `WysiwygEditor` (from projects feature). Loads full content on selection change. Sanitizes HTML with DOMPurify before saving.
+- **DocumentEditor.jsx** — Editing panel for the selected document's title and content. Uses `WysiwygEditor` (from projects feature). Loads full content on selection change. Sanitizes HTML with DOMPurify before saving. Features: red border on WYSIWYG editor when content has unsaved changes, Ctrl+S/Cmd+S keyboard shortcut to save, `beforeunload` warning when leaving with unsaved changes, header title reflects selected document's title. Syncs unsaved changes flag to context via `setUnsavedChanges`.
 
 ### context/
-- **DocumentsContext.jsx** — State management via `useReducer`. Manages `documents[]`, `selectedDocumentId`, `deletingDocumentIds[]`. Provides CRUD actions and `fetchDocumentContent`. Persists selected document ID to localStorage.
+- **DocumentsContext.jsx** — State management via `useReducer`. Manages `documents[]`, `selectedDocumentId`, `deletingDocumentIds[]`. Provides CRUD actions and `fetchDocumentContent`. Persists selected document ID to localStorage. Tracks unsaved changes via a shared ref (`setUnsavedChanges`/`checkUnsavedChanges`) for cross-component access. `selectDocument` prompts with `window.confirm` when switching documents with unsaved changes.
 
 ### hooks/
 - **useDocumentsPersistence.js** — Persistence hook. Switches between `GroodoDocumentsClient` (authenticated) and `LocalStorageDocumentsClient` (guest). Handles optimistic updates with rollback.
