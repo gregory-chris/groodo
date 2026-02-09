@@ -8,7 +8,7 @@ import WysiwygEditor from '../../projects/components/WysiwygEditor';
  * DocumentEditor - Main panel for editing document title and content
  */
 function DocumentEditor() {
-  const { state, updateDocument, fetchDocumentContent } = useDocumentsContext();
+  const { state, updateDocument, fetchDocumentContent, setUnsavedChanges } = useDocumentsContext();
   const [editedData, setEditedData] = useState({ title: '', content: '' });
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
@@ -75,11 +75,16 @@ function DocumentEditor() {
   }, [selectedDocument?.id, loadDocumentContent]);
 
   const handleSave = () => {
-    if (selectedDocument) {
+    if (selectedDocument && !isLoadingContent) {
+      const sanitizedContent = DOMPurify.sanitize(editedData.content || '');
       updateDocument(selectedDocument.id, {
         title: editedData.title,
-        content: DOMPurify.sanitize(editedData.content || ''),
+        content: sanitizedContent,
       });
+      // Sync editedData if DOMPurify modified the content to prevent false "unsaved changes"
+      if (sanitizedContent !== (editedData.content || '')) {
+        setEditedData(prev => ({ ...prev, content: sanitizedContent }));
+      }
     }
   };
 
@@ -91,6 +96,51 @@ function DocumentEditor() {
       (editedData.content || '') !== (selectedDocument.content || '')
     );
   }, [editedData, selectedDocument, isInitialized]);
+
+  // Track unsaved changes specifically in the WYSIWYG editor (for red border indicator)
+  const hasUnsavedEditorChanges = useMemo(() => {
+    if (!isInitialized || !selectedDocument) return false;
+    return (editedData.content || '') !== (selectedDocument.content || '');
+  }, [editedData.content, selectedDocument, isInitialized]);
+
+  // Ref to always access the latest handleSave without re-registering listeners
+  const handleSaveRef = useRef(handleSave);
+  useEffect(() => {
+    handleSaveRef.current = handleSave;
+  });
+
+  // Ctrl+S / Cmd+S keyboard shortcut to save
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveRef.current?.();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Warn before leaving the page (browser close/refresh) with unsaved changes
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Sync unsaved changes flag to context for cross-component access
+  useEffect(() => {
+    setUnsavedChanges(hasUnsavedChanges);
+  }, [hasUnsavedChanges, setUnsavedChanges]);
+
+  // Clear unsaved changes flag on unmount
+  useEffect(() => {
+    return () => setUnsavedChanges(false);
+  }, [setUnsavedChanges]);
 
   // Empty state
   if (!selectedDocument) {
@@ -107,8 +157,8 @@ function DocumentEditor() {
     <div className="h-full w-full flex flex-col bg-white">
       {/* Header */}
       <div className="h-16 px-4 border-b border-gray-200 flex-shrink-0 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">Document</h2>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <h2 className="text-lg font-semibold text-gray-900 truncate">{selectedDocument.title || 'Untitled'}</h2>
           {isLoadingContent && (
             <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -125,7 +175,7 @@ function DocumentEditor() {
         <button
           onClick={handleSave}
           disabled={isLoadingContent}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#701E2E] hover:bg-[#8B2639] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#701E2E] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#701E2E] hover:bg-[#8B2639] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#701E2E] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           Save
@@ -162,7 +212,7 @@ function DocumentEditor() {
               onChange={(content) => setEditedData({ ...editedData, content: content })}
               placeholder="Start writing..."
               disabled={isLoadingContent}
-              className="h-full"
+              className={`h-full${hasUnsavedEditorChanges ? ' wysiwyg-unsaved' : ''}`}
             />
           </div>
         </div>

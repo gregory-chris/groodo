@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDocumentsPersistence } from '../hooks/useDocumentsPersistence.js';
 
@@ -112,6 +112,17 @@ export function DocumentsProvider({ children }) {
   // Initialize persistence hook for auto-save, load, error handling
   const persistence = useDocumentsPersistence(state, dispatch);
 
+  // Track unsaved changes from the editor (shared via ref for performance — no re-renders)
+  const unsavedChangesRef = useRef(false);
+
+  const setUnsavedChanges = useCallback((value) => {
+    unsavedChangesRef.current = value;
+  }, []);
+
+  const checkUnsavedChanges = useCallback(() => {
+    return unsavedChangesRef.current;
+  }, []);
+
   // Sync selection to localStorage whenever it changes, but only after initial load
   useEffect(() => {
     if (persistence.isLoaded) {
@@ -197,11 +208,16 @@ export function DocumentsProvider({ children }) {
   }, [persistence, state.documents]);
 
   const selectDocument = useCallback((documentId) => {
+    if (documentId === state.selectedDocumentId) return;
+    if (unsavedChangesRef.current) {
+      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave this document?');
+      if (!confirmed) return;
+    }
     dispatch({
       type: ACTIONS.SELECT_DOCUMENT,
       payload: documentId,
     });
-  }, []);
+  }, [state.selectedDocumentId]);
 
   // Helper to get next untitled name
   const getNextUntitledName = useCallback(() => {
@@ -243,6 +259,8 @@ export function DocumentsProvider({ children }) {
     selectDocument,
     fetchDocumentContent,
     getNextUntitledName,
+    setUnsavedChanges,
+    checkUnsavedChanges,
   };
 
   return (

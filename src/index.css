@@ -623,6 +623,16 @@ body {
   box-shadow: 0 0 0 3px rgba(112, 30, 46, 0.1);
 }
 
+/* Unsaved changes indicator — red border on editor (no layout shift since border already exists) */
+.wysiwyg-editor-wrapper.wysiwyg-unsaved {
+  border-color: #8B2639;
+}
+
+.wysiwyg-editor-wrapper.wysiwyg-unsaved:focus-within {
+  border-color: #8B2639;
+  box-shadow: 0 0 0 3px rgba(139, 38, 57, 0.15);
+}
+
 /* TipTap toolbar styling */
 .wysiwyg-toolbar {
   display: flex;
