@@ -23,10 +23,11 @@ Groodo is a React-based task management app with three main features: a **weekly
 ## Entry Points
 
 - `main.jsx` — App bootstrap. Wraps everything in `StrictMode`, `AuthProvider`, and configures toast notifications.
-- `App.jsx` — Router setup with three routes:
+- `App.jsx` — Router setup using `createBrowserRouter` (data router) with `RouterProvider`. Three routes:
   - `/` → Board (eager loaded)
-  - `/projects` → ProjectsPage (lazy loaded)
-  - `/documents` → DocumentsPage (lazy loaded)
+  - `/projects` → ProjectsPage (lazy loaded, wrapped in Suspense)
+  - `/documents` → DocumentsPage (lazy loaded, wrapped in Suspense)
+  Uses data router to enable `useBlocker` and other data-router-specific features.
 
 ## Folder Structure
 

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import Board from './features/board/components/Board';
 
 // Lazy load Projects and Documents pages for code splitting
@@ -18,23 +18,44 @@ function LoadingFallback() {
   );
 }
 
+// Wrap lazy-loaded routes in Suspense for code splitting
+function LazyProjectsPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ProjectsPage />
+    </Suspense>
+  );
+}
+
+function LazyDocumentsPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <DocumentsPage />
+    </Suspense>
+  );
+}
+
+// Use createBrowserRouter (data router) to enable useBlocker and other data-router features
+const router = createBrowserRouter(
+  [
+    { path: '/', element: <Board /> },
+    { path: '/projects', element: <LazyProjectsPage /> },
+    { path: '/documents', element: <LazyDocumentsPage /> },
+    { path: '*', element: <Navigate to="/" replace /> },
+  ],
+  {
+    future: {
+      v7_relativeSplatPath: true,
+    },
+  }
+);
+
 function App() {
   return (
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          <Route path="/" element={<Board />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+    <RouterProvider
+      router={router}
+      future={{ v7_startTransition: true }}
+    />
   );
 }
 
