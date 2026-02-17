@@ -37,13 +37,15 @@ function boardReducer(state, action) {
       };
 
     case ACTIONS.ADD_TASK: {
+      const now = Date.now();
       const newTask = {
-        id: action.payload.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: action.payload.id || `task-${now}-${Math.random().toString(36).substr(2, 9)}`,
         title: action.payload.title || '',
         content: action.payload.content || '',
         column: action.payload.column || 'general',
         completed: false,
-        createdAt: Date.now(),
+        createdAt: now,
+        updatedAt: now,
         order: action.payload.order ?? state.tasks.filter(t => t.column === action.payload.column).length,
         ...action.payload
       };
@@ -56,11 +58,12 @@ function boardReducer(state, action) {
 
     case ACTIONS.UPDATE_TASK: {
       const { taskId, updates } = action.payload;
+      const now = Date.now();
       return {
         ...state,
         tasks: state.tasks.map(task =>
           task.id === taskId
-            ? { ...task, ...updates }
+            ? { ...task, ...updates, updatedAt: now }
             : task
         )
       };

@@ -18,14 +18,42 @@ function TaskCard({
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isHighlighted, setIsHighlighted] = useState(false);
 
   // Handle missing task prop
   if (!task) {
     return null;
   }
 
-  const { id, title, completed, content = '' } = task;
-  const hasDescription = content && content.trim().length > 0;
+  const { id, title, completed, content = '', updatedAt, createdAt } = task;
+
+  // Handle highlight effect on update or creation
+  React.useEffect(() => {
+    const lastModified = Math.max(updatedAt || 0, createdAt || 0);
+    const now = Date.now();
+
+    // Only highlight if modified within the last 2 seconds (to avoid highlighting on page load)
+    if (now - lastModified < 2000) {
+      setIsHighlighted(true);
+
+      // Remove highlight class to trigger fade out
+      const timer = setTimeout(() => {
+        setIsHighlighted(false);
+      }, 100); // Short delay to ensure the "active" state is rendered
+
+      return () => clearTimeout(timer);
+    }
+  }, [updatedAt, createdAt, id]);
+
+  // Strip HTML tags from text
+  const stripHtml = (text) => {
+    if (!text) return '';
+    // Create a temporary element to decode HTML entities properly
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    return doc.body.textContent || '';
+  };
+
+  const hasDescription = content && stripHtml(content).trim().length > 0;
 
   // useSortable hook for drag and drop functionality
   const {
@@ -96,14 +124,6 @@ function TaskCard({
     setShowTooltip(false);
   };
 
-  // Strip HTML tags from text
-  const stripHtml = (text) => {
-    if (!text) return '';
-    // Create a temporary element to decode HTML entities properly
-    const doc = new DOMParser().parseFromString(text, 'text/html');
-    return doc.body.textContent || '';
-  };
-
   // Truncate description for tooltip
   const truncateText = (text, maxLength = 150) => {
     if (!text) return '';
@@ -142,6 +162,11 @@ function TaskCard({
         data-testid="task-card"
         {...attributes}
       >
+        {/* Highlight Overlay */}
+        <div
+          className={`task-highlight-overlay ${isHighlighted ? 'active' : ''}`}
+        />
+
         {/* Drag Handle */}
         <div
           className="task-drag-handle"
