@@ -153,7 +153,7 @@ function TaskCard({
       <div
         ref={setNodeRef}
         style={style}
-        className={`task-card ${completed ? 'task-completed' : ''} ${hasDescription ? 'task-has-description' : ''} ${className}`.trim()}
+        className={`task-card group ${completed ? 'task-completed' : ''} ${hasDescription ? 'task-has-description' : ''} ${className}`.trim()}
         onKeyDown={handleKeyDown}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -203,109 +203,115 @@ function TaskCard({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-1">
-          {/* Duplicate Button - only for non-completed tasks */}
-          {!completed && (
+        {/* Hover Actions */}
+        <div className="relative z-20">
+
+
+          {/* Action Buttons - Hidden by default, visible on hover */}
+          <div className="hidden group-hover:flex items-center gap-1 absolute right-0 top-0 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg shadow-sm p-1 pr-2 pl-2 -mt-1 -mr-1">
+            {!completed && (
+              <>
+                <button
+                  className="task-edit p-1 rounded hover:bg-gray-100/80 text-gray-500 hover:text-gray-700 transition-colors"
+                  onClick={handleDuplicateClick}
+                  aria-label={`Duplicate task "${title}"`}
+                  data-testid="task-duplicate"
+                  title="Duplicate"
+                >
+                  <Copy size={13} />
+                </button>
+                <button
+                  className="task-edit p-1 rounded hover:bg-gray-100/80 text-gray-500 hover:text-gray-700 transition-colors"
+                  onClick={handleEditClick}
+                  aria-label={`Edit task "${title}"`}
+                  data-testid="task-edit"
+                  title="Edit"
+                >
+                  <Edit3 size={13} />
+                </button>
+                <button
+                  className="task-edit p-1 rounded hover:bg-gray-100/80 text-gray-500 hover:text-gray-700 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onMoveNext) onMoveNext(task);
+                  }}
+                  aria-label={`Move task "${title}" to next day`}
+                  data-testid="task-move-next"
+                  title="Move to next day"
+                >
+                  <ArrowRight size={13} />
+                </button>
+              </>
+            )}
+
             <button
-              className="task-edit"
-              onClick={handleDuplicateClick}
-              aria-label={`Duplicate task "${title}"`}
-              data-testid="task-duplicate"
+              className="task-delete p-1 rounded hover:bg-red-50/80 text-gray-400 hover:text-red-500 transition-colors"
+              onClick={handleDeleteClick}
+              aria-label={`Delete task "${title}"`}
+              data-testid="task-delete"
+              title="Delete"
             >
-              <Copy size={12} />
+              <Trash2 size={13} />
             </button>
-          )}
-
-          {/* Edit Button */}
-          <button
-            className="task-edit"
-            onClick={handleEditClick}
-            aria-label={`Edit task "${title}"`}
-            data-testid="task-edit"
-          >
-            <Edit3 size={12} />
-          </button>
-
-          {/* Move to Next Day Button - only for non-completed tasks */}
-          {!completed && (
-            <button
-              className="task-edit"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onMoveNext) onMoveNext(task);
-              }}
-              aria-label={`Move task "${title}" to next day`}
-              data-testid="task-move-next"
-              title="Move to next day"
-            >
-              <ArrowRight size={12} />
-            </button>
-          )}
-
-          {/* Delete Button */}
-          <button
-            className="task-delete"
-            onClick={handleDeleteClick}
-            aria-label={`Delete task "${title}"`}
-            data-testid="task-delete"
-          >
-            <Trash2 size={12} />
-          </button>
+          </div>
         </div>
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
-          onClick={handleCancelDelete}
-        >
+      {
+        showDeleteConfirm && (
           <div
-            className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-lg border border-gray-200"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              animation: 'fadeInScale 0.15s ease-out'
-            }}
+            className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+            onClick={handleCancelDelete}
           >
-            <div className="text-center mb-6">
-              <p className="text-gray-900 font-medium text-base">
-                Delete '{title}'?
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleCancelDelete}
-                className="flex-1 h-12 bg-gray-100 border border-gray-200 px-5 rounded-lg hover:bg-gray-200 transition-all duration-150 flex items-center justify-center"
-                title="Cancel"
-              >
-                <X size={20} className="text-gray-600" />
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="flex-1 h-12 bg-red-500 text-white px-5 rounded-lg hover:bg-red-600 transition-all duration-150 flex items-center justify-center shadow-sm hover:shadow-md"
-                title="Delete"
-              >
-                <Check size={20} className="text-white" />
-              </button>
+            <div
+              className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-lg border border-gray-200"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                animation: 'fadeInScale 0.15s ease-out'
+              }}
+            >
+              <div className="text-center mb-6">
+                <p className="text-gray-900 font-medium text-base">
+                  Delete '{title}'?
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelDelete}
+                  className="flex-1 h-12 bg-gray-100 border border-gray-200 px-5 rounded-lg hover:bg-gray-200 transition-all duration-150 flex items-center justify-center"
+                  title="Cancel"
+                >
+                  <X size={20} className="text-gray-600" />
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 h-12 bg-red-500 text-white px-5 rounded-lg hover:bg-red-600 transition-all duration-150 flex items-center justify-center shadow-sm hover:shadow-md"
+                  title="Delete"
+                >
+                  <Check size={20} className="text-white" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Tooltip */}
-      {showTooltip && (
-        <div className="absolute z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 max-w-xs shadow-lg border border-gray-700 -top-2 left-full ml-2 transform -translate-y-full">
-          <div className="font-medium mb-1">{title}</div>
-          {hasDescription && (
-            <div className="text-gray-300 whitespace-pre-wrap">
-              {truncateText(content)}
-            </div>
-          )}
-          {/* Tooltip arrow */}
-          <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-        </div>
-      )}
+      {
+        showTooltip && (
+          <div className="absolute z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 max-w-xs shadow-lg border border-gray-700 -top-2 left-full ml-2 transform -translate-y-full">
+            <div className="font-medium mb-1">{title}</div>
+            {hasDescription && (
+              <div className="text-gray-300 whitespace-pre-wrap">
+                {truncateText(content)}
+              </div>
+            )}
+            {/* Tooltip arrow */}
+            <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+          </div>
+        )
+      }
     </>
   );
 }
