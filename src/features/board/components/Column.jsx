@@ -11,7 +11,7 @@ import TaskCard from './TaskCard';
  * Features drag and drop functionality and task management
  */
 function Column({ date, className = '', ...props }) {
-  const { state, addTask, deleteTask, toggleTaskComplete, duplicateTask, openTaskModal } = useBoardContext();
+  const { state, addTask, deleteTask, toggleTaskComplete, duplicateTask, moveTask, openTaskModal } = useBoardContext();
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
   // Get day name for drop zone ID - must be before any conditional returns
@@ -164,6 +164,25 @@ function Column({ date, className = '', ...props }) {
               onDelete={deleteTask}
               onToggleComplete={toggleTaskComplete}
               onDuplicate={handleDuplicateTask}
+              onMoveNext={(task) => {
+                const nextDate = new Date(date);
+                nextDate.setDate(date.getDate() + 1);
+
+                // Skip Friday (5) and Saturday (6) to get to Sunday (0)
+                while (nextDate.getDay() === 5 || nextDate.getDay() === 6) {
+                  nextDate.setDate(nextDate.getDate() + 1);
+                }
+
+                const targetColumn = getDateKey(nextDate);
+
+                // Calculate order: last in target column
+                const targetTasks = state.tasks.filter(t => t.column === targetColumn);
+                const maxOrder = targetTasks.length > 0
+                  ? Math.max(...targetTasks.map(t => t.order || 0))
+                  : -1;
+
+                moveTask(task.id, targetColumn, maxOrder + 1);
+              }}
             />
           ))}
         </SortableContext>

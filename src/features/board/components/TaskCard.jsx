@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Trash2, GripVertical, X, Check, Edit3, Copy } from 'lucide-react';
+import { Trash2, GripVertical, X, Check, Edit3, Copy, ArrowRight } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -14,6 +14,7 @@ function TaskCard({
   onDelete,
   onEdit,
   onDuplicate,
+  onMoveNext,
   className = ''
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -226,6 +227,22 @@ function TaskCard({
             <Edit3 size={12} />
           </button>
 
+          {/* Move to Next Day Button - only for non-completed tasks */}
+          {!completed && (
+            <button
+              className="task-edit"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onMoveNext) onMoveNext(task);
+              }}
+              aria-label={`Move task "${title}" to next day`}
+              data-testid="task-move-next"
+              title="Move to next day"
+            >
+              <ArrowRight size={12} />
+            </button>
+          )}
+
           {/* Delete Button */}
           <button
             className="task-delete"
@@ -303,6 +320,7 @@ TaskCard.propTypes = {
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onDuplicate: PropTypes.func,
+  onMoveNext: PropTypes.func,
   className: PropTypes.string,
 };
 

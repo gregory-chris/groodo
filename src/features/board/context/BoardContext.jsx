@@ -125,7 +125,12 @@ function boardReducer(state, action) {
       targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
 
       // Insert the moving task at the target position
-      targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
+      const now = Date.now();
+      targetColumnTasks.splice(targetOrder, 0, {
+        ...movingTask,
+        column: targetColumn,
+        updatedAt: now
+      });
 
       // Reassign order values to all tasks in the target column
       const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
@@ -137,8 +142,9 @@ function boardReducer(state, action) {
       const updatedTasks = state.tasks.map(task => {
         if (task.id === taskId) {
           // This is the moving task - find it in the reordered array
+          // It should already have the new updatedAt from the splice above if we preserve it
           const reorderedTask = reorderedTargetTasks.find(t => t.id === task.id);
-          return reorderedTask || { ...task, column: targetColumn, order: targetOrder };
+          return reorderedTask || { ...task, column: targetColumn, order: targetOrder, updatedAt: now };
         } else if (task.column === targetColumn) {
           // Other tasks in the target column - find them in the reordered array
           const reorderedTask = reorderedTargetTasks.find(t => t.id === task.id);
@@ -339,7 +345,8 @@ export function BoardProvider({ children }) {
               taskId: newTask.id,
               updates: {
                 column: newTask.column,
-                order: newTask.order
+                order: newTask.order,
+                ...(newTask.id === taskId ? { updatedAt: Date.now() } : {})
               },
               previousTask: { ...originalTask }
             });
