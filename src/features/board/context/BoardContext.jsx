@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import { getCurrentWeek, getNextWeek, getPreviousWeek } from '../../../lib/date.js';
+import { getCurrentWeek, getNextWeek, getPreviousWeek, getDateKey } from '../../../lib/date.js';
 import { usePersistence } from '../hooks/usePersistence.js';
 import TaskModal from '../components/TaskModal';
 
@@ -88,17 +88,17 @@ function boardReducer(state, action) {
         const otherTasksInColumn = state.tasks.filter(
           task => task.column === targetTask.column && task.id !== taskId
         );
-        
+
         // Get the highest order in the column
         const maxOrder = Math.max(...otherTasksInColumn.map(task => task.order || 0), -1);
-        
+
         // Update the target task with new order (last position)
         updatedTask.order = maxOrder + 1;
       }
 
       return {
         ...state,
-        tasks: state.tasks.map(task => 
+        tasks: state.tasks.map(task =>
           task.id === taskId ? updatedTask : task
         )
       };
@@ -106,30 +106,30 @@ function boardReducer(state, action) {
 
     case ACTIONS.MOVE_TASK: {
       const { taskId, targetColumn, targetOrder } = action.payload;
-      
+
       // Get the task being moved
       const movingTask = state.tasks.find(task => task.id === taskId);
       if (!movingTask) {
         return state;
       }
-      
+
       // Get all tasks in the target column (excluding the moving task)
       const targetColumnTasks = state.tasks.filter(
         task => task.column === targetColumn && task.id !== taskId
       );
-      
+
       // Sort target column tasks by order
       targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
-      
+
       // Insert the moving task at the target position
       targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
-      
+
       // Reassign order values to all tasks in the target column
       const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
         ...task,
         order: index
       }));
-      
+
       // Create the final updated tasks array
       const updatedTasks = state.tasks.map(task => {
         if (task.id === taskId) {
@@ -143,7 +143,7 @@ function boardReducer(state, action) {
         }
         return task;
       });
-      
+
       return {
         ...state,
         tasks: updatedTasks
@@ -213,39 +213,41 @@ export function BoardProvider({ children }) {
 
   // Action creators with immediate persistence
   const addTask = useCallback((titleOrData, column, content = '') => {
-    const taskData = typeof titleOrData === 'string' 
+    const taskData = typeof titleOrData === 'string'
       ? { title: titleOrData, column, content }
       : titleOrData;
-    
+
     // Generate temp ID
     const tempId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newTask = { 
-      ...taskData, 
+    const newTask = {
+      ...taskData,
       id: tempId,
       completed: false,
       createdAt: Date.now(),
     };
-    
+
     // Optimistic update
     dispatch({
       type: ACTIONS.ADD_TASK,
       payload: newTask
     });
-    
+
     // Async sync (fire and forget, rollback handled inside)
     persistence.handleCreateTask(newTask, dispatch);
+
+    return newTask;
   }, [persistence]);
 
   const updateTask = useCallback((taskId, updates) => {
     // Store previous values for rollback
     const previousTask = state.tasks.find(t => t.id === taskId);
-    
+
     // Optimistic update
     dispatch({
       type: ACTIONS.UPDATE_TASK,
       payload: { taskId, updates }
     });
-    
+
     // Async sync with rollback
     if (previousTask) {
       persistence.handleUpdateTask(taskId, updates, previousTask, dispatch);
@@ -255,13 +257,13 @@ export function BoardProvider({ children }) {
   const deleteTask = useCallback((taskId) => {
     // Store task for potential rollback
     const taskToDelete = state.tasks.find(t => t.id === taskId);
-    
+
     // Optimistic delete
     dispatch({
       type: ACTIONS.DELETE_TASK,
       payload: { taskId }
     });
-    
+
     // Async sync with rollback
     if (taskToDelete) {
       persistence.handleDeleteTask(taskId, taskToDelete, dispatch);
@@ -271,18 +273,28 @@ export function BoardProvider({ children }) {
   const toggleTaskComplete = useCallback((taskId) => {
     // Store previous state for rollback
     const previousTask = state.tasks.find(t => t.id === taskId);
-    
+
     // Optimistic toggle
     dispatch({
       type: ACTIONS.TOGGLE_TASK_COMPLETE,
       payload: { taskId }
     });
-    
+
     // Async sync with rollback
     if (previousTask) {
       persistence.handleToggleComplete(taskId, previousTask, dispatch);
     }
   }, [persistence, state.tasks]);
+
+  const duplicateTask = useCallback((task, isCurrentWeek) => {
+    // If viewing the current week, put duplicate on today; otherwise same column
+    const targetColumn = isCurrentWeek ? getDateKey(new Date()) : task.column;
+    return addTask({
+      title: task.title,
+      content: task.content || '',
+      column: targetColumn,
+    });
+  }, [addTask]);
 
   const moveTask = useCallback((taskId, targetColumn, targetOrder) => {
     // Helper function to calculate affected tasks from current state
@@ -291,34 +303,34 @@ export function BoardProvider({ children }) {
       // Get the task being moved
       const movingTask = currentTasks.find(t => t.id === taskId);
       if (!movingTask) return null;
-      
+
       // Simulate the move to calculate which tasks will be affected
       // This mirrors the logic from the MOVE_TASK reducer
       const targetColumnTasks = currentTasks.filter(
         task => task.column === targetColumn && task.id !== taskId
       );
-      
+
       // Sort target column tasks by order
       targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
-      
+
       // Insert the moving task at the target position
       targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
-      
+
       // Reassign order values to all tasks in the target column
       const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
         ...task,
         order: index
       }));
-      
+
       // Identify which tasks have changed and need to be synced
       const affectedTasks = [];
-      
+
       reorderedTargetTasks.forEach(newTask => {
         const originalTask = currentTasks.find(t => t.id === newTask.id);
         if (originalTask) {
           const orderChanged = originalTask.order !== newTask.order;
           const columnChanged = originalTask.column !== newTask.column;
-          
+
           if (orderChanged || columnChanged) {
             affectedTasks.push({
               taskId: newTask.id,
@@ -331,20 +343,20 @@ export function BoardProvider({ children }) {
           }
         }
       });
-      
+
       return affectedTasks;
     };
 
     // Calculate affected tasks using current state at call time
     const affectedTasks = calculateAffectedTasks(state.tasks);
     if (!affectedTasks) return;
-    
+
     // Optimistic move
     dispatch({
       type: ACTIONS.MOVE_TASK,
       payload: { taskId, targetColumn, targetOrder }
     });
-    
+
     // Send bulk updates for all affected tasks
     if (affectedTasks.length > 0) {
       persistence.handleBulkUpdateTasks(affectedTasks, dispatch);
@@ -384,6 +396,7 @@ export function BoardProvider({ children }) {
       updateTask,
       deleteTask,
       toggleTaskComplete,
+      duplicateTask,
       moveTask,
       setCurrentWeek,
       goToNextWeek,
@@ -395,6 +408,7 @@ export function BoardProvider({ children }) {
     updateTask,
     deleteTask,
     toggleTaskComplete,
+    duplicateTask,
     moveTask,
     setCurrentWeek,
     goToNextWeek,
@@ -465,11 +479,11 @@ BoardProvider.propTypes = {
 // eslint-disable-next-line react-refresh/only-export-components
 export function useBoardContext() {
   const context = useContext(BoardContext);
-  
+
   if (!context) {
     throw new Error('useBoardContext must be used within a BoardProvider');
   }
-  
+
   return context;
 }
 
@@ -500,7 +514,7 @@ export const boardHelpers = {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
     const pending = total - completed;
-    
+
     return {
       total,
       completed,

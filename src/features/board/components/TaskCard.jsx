@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Trash2, GripVertical, X, Check, Edit3 } from 'lucide-react';
+import { Trash2, GripVertical, X, Check, Edit3, Copy } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -8,12 +8,13 @@ import { CSS } from '@dnd-kit/utilities';
  * TaskCard component for displaying individual tasks
  * Features improved design with hover icons and delete confirmation
  */
-function TaskCard({ 
-  task, 
-  onToggleComplete, 
-  onDelete, 
+function TaskCard({
+  task,
+  onToggleComplete,
+  onDelete,
   onEdit,
-  className = '' 
+  onDuplicate,
+  className = ''
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -75,6 +76,14 @@ function TaskCard({
     e.stopPropagation();
     if (onEdit) {
       onEdit(task);
+    }
+  };
+
+  // Handle task duplication
+  const handleDuplicateClick = (e) => {
+    e.stopPropagation();
+    if (onDuplicate) {
+      onDuplicate(task);
     }
   };
 
@@ -148,32 +157,40 @@ function TaskCard({
         {/* Task Content */}
         <div className="task-content">
           {/* Checkbox */}
-          <div className="pt-1">
-            <input
-              type="checkbox"
-              checked={completed}
-              onChange={handleToggleComplete}
-              className="task-checkbox"
-              aria-label={`Mark task "${title}" as ${completed ? 'incomplete' : 'complete'}`}
-              data-testid="task-checkbox"
-            />
-          </div>
+          <input
+            type="checkbox"
+            checked={completed}
+            onChange={handleToggleComplete}
+            className="task-checkbox"
+            aria-label={`Mark task "${title}" as ${completed ? 'incomplete' : 'complete'}`}
+            data-testid="task-checkbox"
+          />
 
           {/* Task Title */}
-          <div className="cursor-pointer flex-1 min-w-0" title={hasDescription ? stripHtml(content) : ''}>
-            <div
-              className={`cursor-pointer text-lg font-medium leading-snug tracking-tight break-words whitespace-normal ${
-                completed ? 'line-through text-gray-400' : 'text-gray-800'
+          <div
+            className={`cursor-pointer flex-1 min-w-0 text-sm font-medium leading-snug tracking-tight break-words whitespace-normal ${completed ? 'line-through text-gray-500' : 'text-gray-800'
               }`}
-              data-testid="task-title"
-            >
-              {title}
-            </div>
+            title={hasDescription ? stripHtml(content) : ''}
+            data-testid="task-title"
+          >
+            {title}
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1">
+          {/* Duplicate Button - only for non-completed tasks */}
+          {!completed && (
+            <button
+              className="task-edit"
+              onClick={handleDuplicateClick}
+              aria-label={`Duplicate task "${title}"`}
+              data-testid="task-duplicate"
+            >
+              <Copy size={12} />
+            </button>
+          )}
+
           {/* Edit Button */}
           <button
             className="task-edit"
@@ -198,11 +215,11 @@ function TaskCard({
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
           onClick={handleCancelDelete}
         >
-          <div 
+          <div
             className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-lg border border-gray-200"
             onClick={(e) => e.stopPropagation()}
             style={{
@@ -260,6 +277,7 @@ TaskCard.propTypes = {
   onToggleComplete: PropTypes.func,
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
+  onDuplicate: PropTypes.func,
   className: PropTypes.string,
 };
 
