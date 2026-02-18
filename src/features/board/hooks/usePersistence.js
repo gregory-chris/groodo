@@ -86,7 +86,7 @@ export function usePersistence(state, dispatch) {
         }
       });
       
-      return { success: true };
+      return { success: true, task: createdTask };
     } catch (error) {
       console.error('Failed to create task:', error);
       

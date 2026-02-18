@@ -295,15 +295,38 @@ export function BoardProvider({ children }) {
     }
   }, [persistence, state.tasks]);
 
-  const duplicateTask = useCallback((task, isCurrentWeek) => {
+  const duplicateTask = useCallback(async (task, isCurrentWeek) => {
     // If viewing the current week, put duplicate on today; otherwise same column
     const targetColumn = isCurrentWeek ? getDateKey(new Date()) : task.column;
-    return addTask({
+
+    // Generate temp ID and create task data
+    const tempId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newTask = {
       title: task.title,
       content: task.content || '',
       column: targetColumn,
+      id: tempId,
+      completed: false,
+      createdAt: Date.now(),
+    };
+
+    // Optimistic update - task appears in the UI immediately
+    dispatch({
+      type: ACTIONS.ADD_TASK,
+      payload: newTask
     });
-  }, [addTask]);
+
+    // Wait for persistence to complete and get the real ID
+    const result = await persistence.handleCreateTask(newTask, dispatch);
+
+    if (result.success && result.task) {
+      // Return the task with the real persisted ID so the modal targets the correct task
+      return { ...newTask, id: result.task.id };
+    }
+
+    // If persistence failed, the task was rolled back by handleCreateTask
+    return null;
+  }, [persistence, dispatch]);
 
   const moveTask = useCallback((taskId, targetColumn, targetOrder) => {
     // Helper function to calculate affected tasks from current state

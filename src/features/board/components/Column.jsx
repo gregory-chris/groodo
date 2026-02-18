@@ -80,8 +80,8 @@ function Column({ date, className = '', ...props }) {
   const currentWeekBounds = getCurrentWeek();
   const isCurrentWeek = date >= currentWeekBounds.start && date <= currentWeekBounds.end;
 
-  const handleDuplicateTask = (task) => {
-    const newTask = duplicateTask(task, isCurrentWeek);
+  const handleDuplicateTask = async (task) => {
+    const newTask = await duplicateTask(task, isCurrentWeek);
     if (newTask) {
       openTaskModal('edit', newTask);
     }

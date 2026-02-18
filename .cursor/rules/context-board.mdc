@@ -22,10 +22,12 @@ The main feature of the app. Displays tasks in a **Sunday–Thursday weekly boar
 - **AccessibilityProvider.jsx** — Screen reader announcements, keyboard navigation hooks, focus management, and skip links.
 
 ### context/
-- **BoardContext.jsx** — Central state via `useReducer`. Manages `tasks[]`, `currentWeek`, `modalState`. Provides CRUD actions and week navigation. Uses `usePersistence` for data loading/saving.
+- **BoardContext.jsx** — Central state via `useReducer`. Manages `tasks[]`, `currentWeek`, `modalState`. Provides CRUD actions and week navigation. Uses `usePersistence` for data loading/saving. 
+`duplicateTask` is **async** — it dispatches an optimistic `ADD_TASK` immediately, then awaits persistence to resolve the real ID before returning the task (so the edit modal opens with the correct persisted ID).
 
 ### hooks/
 - **usePersistence.js** — Loads/saves tasks using the appropriate storage client. Handles optimistic updates with rollback. Supports bulk updates (for drag reordering).
+`handleCreateTask` returns `{ success, task }` so callers can access the persisted task (with real ID).
 - **useWeekNavigation.js** — Standalone week navigation hook (available but not currently used by BoardContext, which manages navigation internally).
 
 ## Key Business Rules
