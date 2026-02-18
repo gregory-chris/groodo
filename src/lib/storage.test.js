@@ -22,10 +22,10 @@ describe('Storage Module', () => {
   });
 
   describe('saveState', () => {
-    it('should save state to localStorage with version', () => {
+    it('should save state to localStorage with version', async () => {
       const state = { tasks: [], currentWeek: '2025-09-10' };
       
-      saveState(state);
+      await saveState(state);
       
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         STORAGE_KEY,
@@ -42,47 +42,53 @@ describe('Storage Module', () => {
       expect(typeof parsed.timestamp).toBe('number');
     });
 
-    it('should handle localStorage quota exceeded error', () => {
+    it('should handle localStorage quota exceeded error', async () => {
       const state = { tasks: [] };
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new DOMException('QuotaExceededError', 'QuotaExceededError');
       });
 
       // Should not throw, but should handle gracefully
-      expect(() => saveState(state)).not.toThrow();
+      await expect(saveState(state)).resolves.not.toThrow();
       
       expect(mockLocalStorage.setItem).toHaveBeenCalled();
     });
 
-    it('should handle other localStorage errors gracefully', () => {
+    it('should handle other localStorage errors gracefully', async () => {
       const state = { tasks: [] };
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('Some other error');
       });
 
-      expect(() => saveState(state)).not.toThrow();
+      await expect(saveState(state)).resolves.not.toThrow();
+    });
+
+    it('should return a Promise', () => {
+      const state = { tasks: [] };
+      const result = saveState(state);
+      expect(result).toBeInstanceOf(Promise);
     });
   });
 
   describe('loadState', () => {
-    it('should return null when no stored data exists', () => {
+    it('should return null when no stored data exists', async () => {
       mockLocalStorage.getItem.mockReturnValue(null);
       
-      const result = loadState();
+      const result = await loadState();
       
       expect(result).toBeNull();
       expect(mockLocalStorage.getItem).toHaveBeenCalledWith(STORAGE_KEY);
     });
 
-    it('should return null when stored data is invalid JSON', () => {
+    it('should return null when stored data is invalid JSON', async () => {
       mockLocalStorage.getItem.mockReturnValue('invalid json');
       
-      const result = loadState();
+      const result = await loadState();
       
       expect(result).toBeNull();
     });
 
-    it('should load and return current version data', () => {
+    it('should load and return current version data', async () => {
       const storedData = {
         version: CURRENT_VERSION,
         data: { tasks: [], currentWeek: '2025-09-10' },
@@ -90,12 +96,12 @@ describe('Storage Module', () => {
       };
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(storedData));
       
-      const result = loadState();
+      const result = await loadState();
       
       expect(result).toEqual(storedData.data);
     });
 
-    it('should migrate data from older version', () => {
+    it('should migrate data from older version', async () => {
       const oldData = {
         version: 1,
         data: { tasks: [{ id: 1, title: 'Test' }] },
@@ -103,7 +109,7 @@ describe('Storage Module', () => {
       };
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(oldData));
       
-      const result = loadState();
+      const result = await loadState();
       
       // Should return migrated data
       expect(result).toBeDefined();
@@ -111,32 +117,38 @@ describe('Storage Module', () => {
       expect(mockLocalStorage.setItem).toHaveBeenCalled();
     });
 
-    it('should handle missing version field (treat as version 1)', () => {
+    it('should handle missing version field (treat as version 1)', async () => {
       const legacyData = {
         tasks: [{ id: 1, title: 'Legacy task' }]
       };
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(legacyData));
       
-      const result = loadState();
+      const result = await loadState();
       
       expect(result).toBeDefined();
       // Should save migrated data
       expect(mockLocalStorage.setItem).toHaveBeenCalled();
     });
 
-    it('should handle localStorage access errors', () => {
+    it('should handle localStorage access errors', async () => {
       mockLocalStorage.getItem.mockImplementation(() => {
         throw new Error('localStorage access denied');
       });
       
-      const result = loadState();
+      const result = await loadState();
       
       expect(result).toBeNull();
+    });
+
+    it('should return a Promise', () => {
+      mockLocalStorage.getItem.mockReturnValue(null);
+      const result = loadState();
+      expect(result).toBeInstanceOf(Promise);
     });
   });
 
   describe('Version Migration', () => {
-    it('should migrate from version 1 to current version', () => {
+    it('should migrate from version 1 to current version', async () => {
       const v1Data = {
         version: 1,
         data: { 
@@ -149,11 +161,12 @@ describe('Storage Module', () => {
       };
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(v1Data));
       
-      const result = loadState();
+      const result = await loadState();
       
       expect(result).toBeDefined();
       expect(result.tasks).toBeDefined();
-      // Verify migration logic was applied
+      // Verify migration logic was applied — the migrated data is saved
+      // synchronously inside loadState via _saveStateSync
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         STORAGE_KEY,
         expect.stringContaining(`"version":${CURRENT_VERSION}`)

@@ -49,4 +49,5 @@ Each handles auth token injection and sliding expiration via `touchCookie`.
 
 - `config.js` — API host configuration, auto-detects dev vs production
 - `date.js` — Date utilities for the **Sunday–Thursday work week**: week bounds, navigation, formatting, date keys
-- `storage.js` — localStorage persistence with **data versioning and migration** support (used by board tasks)
+- `storage.js` — localStorage persistence with **data versioning and migration** support (used by board tasks).
+`saveState` and `loadState` are **async** (yield to the event loop via `setTimeout(0)`) so that consuming code behaves identically whether the underlying storage is localStorage or a remote API — this avoids subtle timing bugs where synchronous localStorage resolves in the micro-task queue while real network calls do not. Migration helpers (`_saveStateSync`, `migrateData`, `migrateFromVersion1`) remain synchronous and are used internally within the already-async `loadState`.

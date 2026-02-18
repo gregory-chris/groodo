@@ -15,7 +15,7 @@ The main feature of the app. Displays tasks in a **Sunday–Thursday weekly boar
 ### components/
 - **Board.jsx** — Root component. Composes providers (Accessibility → Board → Drag) and renders the week grid with one `Column` per day.
 - **Column.jsx** — Single day column. Shows tasks filtered by date key, supports inline task creation, and acts as a drop zone. Excludes tasks that belong to a project (`projectId !== null`).
-- **TaskCard.jsx** — Individual task card with drag handle, completion checkbox, edit/delete actions, and keyboard shortcuts (Enter=edit, Space=toggle, Delete=delete).
+- **TaskCard.jsx** — Individual task card with drag handle, completion checkbox, edit/delete actions, and keyboard shortcuts (Enter=edit, Space=toggle, Delete=delete). Includes a **highlight-on-update** effect: a gold overlay flashes and fades out (1.5s CSS transition) when a task is recently modified. Uses two refs: `lastHighlightTriggerRef` (2s cooldown) prevents the animation from re-triggering during async ID swaps, and `highlightTimerRef` stores the fade-out timer outside of effect cleanup so it survives dependency-triggered effect re-runs without being cancelled prematurely.
 - **TaskModal.jsx** — Modal for editing task title and rich text description. Supports "Move to Next Week". Uses `WysiwygEditor`.
 - **WeekNav.jsx** — Previous/Next/Today navigation with formatted week range display.
 - **DragProvider.jsx** — Wraps `@dnd-kit` DnD context. Handles drag start/end/over events, calculates drop positions, and calls `moveTask`.
