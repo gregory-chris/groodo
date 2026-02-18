@@ -9,6 +9,7 @@ const ACTIONS = {
   LOAD_STATE: 'LOAD_STATE',
   ADD_TASK: 'ADD_TASK',
   UPDATE_TASK: 'UPDATE_TASK',
+  RECONCILE_TASK: 'RECONCILE_TASK',
   DELETE_TASK: 'DELETE_TASK',
   MOVE_TASK: 'MOVE_TASK',
   TOGGLE_TASK_COMPLETE: 'TOGGLE_TASK_COMPLETE',
@@ -38,8 +39,9 @@ function boardReducer(state, action) {
 
     case ACTIONS.ADD_TASK: {
       const now = Date.now();
+      const taskId = action.payload.id || `task-${now}-${Math.random().toString(36).substr(2, 9)}`;
       const newTask = {
-        id: action.payload.id || `task-${now}-${Math.random().toString(36).substr(2, 9)}`,
+        id: taskId,
         title: action.payload.title || '',
         content: action.payload.content || '',
         column: action.payload.column || 'general',
@@ -47,7 +49,9 @@ function boardReducer(state, action) {
         createdAt: now,
         updatedAt: now,
         order: action.payload.order ?? state.tasks.filter(t => t.column === action.payload.column).length,
-        ...action.payload
+        ...action.payload,
+        // Stable key for React — survives ID swaps from persistence reconciliation
+        _stableKey: taskId,
       };
 
       return {
@@ -64,6 +68,20 @@ function boardReducer(state, action) {
         tasks: state.tasks.map(task =>
           task.id === taskId
             ? { ...task, ...updates, updatedAt: now }
+            : task
+        )
+      };
+    }
+
+    case ACTIONS.RECONCILE_TASK: {
+      // Silent update for persistence bookkeeping (e.g. temp-id → server-id).
+      // Does NOT touch updatedAt so it never re-triggers the highlight animation.
+      const { taskId, updates } = action.payload;
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === taskId
+            ? { ...task, ...updates }
             : task
         )
       };

@@ -14,19 +14,20 @@ The main feature of the app. Displays tasks in a **Sunday–Thursday weekly boar
 
 ### components/
 - **Board.jsx** — Root component. Composes providers (Accessibility → Board → Drag) and renders the week grid with one `Column` per day.
-- **Column.jsx** — Single day column. Shows tasks filtered by date key, supports inline task creation, and acts as a drop zone. Excludes tasks that belong to a project (`projectId !== null`).
-- **TaskCard.jsx** — Individual task card with drag handle, completion checkbox, edit/delete actions, and keyboard shortcuts (Enter=edit, Space=toggle, Delete=delete). Includes a **highlight-on-update** effect: a gold overlay flashes and fades out (1.5s CSS transition) when a task is recently modified. Uses two refs: `lastHighlightTriggerRef` (2s cooldown) prevents the animation from re-triggering during async ID swaps, and `highlightTimerRef` stores the fade-out timer outside of effect cleanup so it survives dependency-triggered effect re-runs without being cancelled prematurely.
+- **Column.jsx** — Single day column. Shows tasks filtered by date key, supports inline task creation, and acts as a drop zone. Excludes tasks that belong to a project (`projectId !== null`). Uses `task._stableKey || task.id` as the React key so TaskCard instances survive persistence ID swaps without remounting.
+- **TaskCard.jsx** — Individual task card with drag handle, completion checkbox, edit/delete actions, and keyboard shortcuts (Enter=edit, Space=toggle, Delete=delete). Includes a **highlight-on-update** effect: a gold overlay flashes and fades out (1.5s CSS transition) when `updatedAt` changes. The effect watches **only `[updatedAt]`** — it is fully decoupled from persistence bookkeeping because `RECONCILE_TASK` (used for ID swaps and rollbacks) never touches `updatedAt`, and the component never remounts during ID swaps thanks to `_stableKey`.
 - **TaskModal.jsx** — Modal for editing task title and rich text description. Supports "Move to Next Week". Uses `WysiwygEditor`.
 - **WeekNav.jsx** — Previous/Next/Today navigation with formatted week range display.
 - **DragProvider.jsx** — Wraps `@dnd-kit` DnD context. Handles drag start/end/over events, calculates drop positions, and calls `moveTask`.
 - **AccessibilityProvider.jsx** — Screen reader announcements, keyboard navigation hooks, focus management, and skip links.
 
 ### context/
-- **BoardContext.jsx** — Central state via `useReducer`. Manages `tasks[]`, `currentWeek`, `modalState`. Provides CRUD actions and week navigation. Uses `usePersistence` for data loading/saving. 
-`duplicateTask` is **async** — it dispatches an optimistic `ADD_TASK` immediately, then awaits persistence to resolve the real ID before returning the task (so the edit modal opens with the correct persisted ID).
+- **BoardContext.jsx** — Central state via `useReducer`. Manages `tasks[]`, `currentWeek`, `modalState`. Provides CRUD actions and week navigation. Uses `usePersistence` for data loading/saving.
+  - **Actions**: `ADD_TASK` (sets `_stableKey` for stable React key), `UPDATE_TASK` (user-intent, sets `updatedAt: now`), **`RECONCILE_TASK`** (silent persistence bookkeeping — updates fields like `id` WITHOUT touching `updatedAt`, so it never re-triggers the highlight animation), `DELETE_TASK`, `MOVE_TASK`, `TOGGLE_TASK_COMPLETE`, plus week navigation actions.
+  - `duplicateTask` is **async** — it dispatches an optimistic `ADD_TASK` immediately, then awaits persistence to resolve the real ID before returning the task (so the edit modal opens with the correct persisted ID).
 
 ### hooks/
-- **usePersistence.js** — Loads/saves tasks using the appropriate storage client. Handles optimistic updates with rollback. Supports bulk updates (for drag reordering).
+- **usePersistence.js** — Loads/saves tasks using the appropriate storage client. Handles optimistic updates with rollback. Supports bulk updates (for drag reordering). All persistence-internal dispatches (ID swaps after create, rollbacks on failure) use **`RECONCILE_TASK`** instead of `UPDATE_TASK` so they never affect `updatedAt` or trigger the highlight animation.
 `handleCreateTask` returns `{ success, task }` so callers can access the persisted task (with real ID).
 - **useWeekNavigation.js** — Standalone week navigation hook (available but not currently used by BoardContext, which manages navigation internally).
 
@@ -35,5 +36,7 @@ The main feature of the app. Displays tasks in a **Sunday–Thursday weekly boar
 - Work week is **Sunday through Thursday** (5 days)
 - Tasks are assigned to a specific date (column)
 - Incomplete tasks sort before completed ones
+- Every task carries a `_stableKey` (set once during `ADD_TASK`) used as the React key in `Column`, so component instances survive temp-id → server-id swaps without remounting
+- `UPDATE_TASK` is for user-intent changes only; `RECONCILE_TASK` is for persistence plumbing (ID swap, rollback) — this separation ensures the highlight animation fires exactly once per user action regardless of storage latency
 - Tasks with a `projectId` are excluded from the board (they belong to the projects feature)
 - "Move to Next Week" moves a task to the same weekday in the following week

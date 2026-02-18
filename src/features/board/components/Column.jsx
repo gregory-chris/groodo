@@ -158,7 +158,7 @@ function Column({ date, className = '', ...props }) {
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <TaskCard
-              key={task.id}
+              key={task._stableKey || task.id}
               task={task}
               onEdit={handleEditTask}
               onDelete={deleteTask}

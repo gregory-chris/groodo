@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Trash2, GripVertical, X, Check, Edit3, Copy, ArrowRight } from 'lucide-react';
-import { useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -21,50 +20,45 @@ function TaskCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [isHighlighted, setIsHighlighted] = useState(false);
-  // Tracks the timestamp of the last highlight trigger to prevent re-triggering
-  // during the fade-out window (e.g. when an async ID swap fires after task creation).
-  const lastHighlightTriggerRef = useRef(0);
-  // Stores the fade-out timer so it survives effect re-runs (effect cleanup
-  // would otherwise cancel it when deps change before the 100ms fires).
-  const highlightTimerRef = useRef(null);
+  // Tracks whether this component has already fired its initial highlight
+  // so we don't re-flash on mount for tasks loaded from storage.
+  const hasFlashedRef = useRef(false);
 
   // Handle missing task prop
   if (!task) {
     return null;
   }
 
-  const { id, title, completed, content = '', updatedAt, createdAt } = task;
+  const { id, title, completed, content = '', updatedAt } = task;
 
-  // Handle highlight effect on update or creation.
-  // A cooldown ref prevents re-triggering within the fade-out window so that
-  // async ID swaps (e.g. after remote task creation) don't restart the animation.
+  // Highlight effect — fires when updatedAt changes.
+  // Only user-intent actions (add/edit/move) set updatedAt via UPDATE_TASK.
+  // Persistence bookkeeping (ID swaps, rollbacks) uses RECONCILE_TASK which
+  // never touches updatedAt, so this effect fires exactly once per user action.
+  // The component also never remounts during ID swaps because Column uses
+  // _stableKey (not task.id) as the React key.
   React.useEffect(() => {
-    const lastModified = Math.max(updatedAt || 0, createdAt || 0);
-    const now = Date.now();
+    if (!updatedAt) return;
 
-    // Only highlight if modified within the last 2 seconds (to avoid highlighting on page load)
-    // AND we are not already inside a recent highlight cycle (cooldown = 2s, matching the
-    // "recent modification" window so the full 1.5s CSS fade can finish uninterrupted).
-    if (now - lastModified < 2000 && now - lastHighlightTriggerRef.current > 2000) {
-      lastHighlightTriggerRef.current = now;
+    const age = Date.now() - updatedAt;
 
-      // Clear any pending timer from a previous cycle
-      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
-
-      setIsHighlighted(true);
-
-      // Remove highlight class after a short delay to trigger the CSS fade-out.
-      // The timer is stored in a ref (not returned as effect cleanup) so it
-      // survives dependency-triggered effect re-runs (e.g. async ID swap after
-      // remote task creation) without being cancelled prematurely.
-      highlightTimerRef.current = setTimeout(() => {
-        setIsHighlighted(false);
-        highlightTimerRef.current = null;
-      }, 100);
+    // Skip stale timestamps (e.g. tasks loaded from storage on page load)
+    if (age > 2000) {
+      hasFlashedRef.current = true;
+      return;
     }
-    // No cleanup returned — the timer lives in a ref so it is never cancelled
-    // by effect re-runs; only an explicit new highlight cycle clears it.
-  }, [updatedAt, createdAt, id]);
+
+    // On first mount with a fresh timestamp, flash immediately.
+    // On subsequent updatedAt changes (user edits), flash again.
+    setIsHighlighted(true);
+    hasFlashedRef.current = true;
+
+    const timer = setTimeout(() => {
+      setIsHighlighted(false);
+    }, 100); // Short delay to ensure the "active" state is rendered before fade
+
+    return () => clearTimeout(timer);
+  }, [updatedAt]);
 
   // Strip HTML tags from text
   const stripHtml = (text) => {

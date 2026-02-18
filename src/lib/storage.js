@@ -3,9 +3,8 @@
  * Handles versioning and migration of stored data
  *
  * All public functions are async (return Promises) so that consuming code
- * behaves identically whether the underlying storage is localStorage or a
- * remote API.  This avoids subtle timing bugs where synchronous localStorage
- * resolves in the micro-task queue while real network calls do not.
+ * follows the same contract whether the underlying storage is localStorage
+ * or a remote API.
  */
 
 export const STORAGE_KEY = 'groodo-task-board';
@@ -17,10 +16,6 @@ export const CURRENT_VERSION = 2;
  * @returns {Promise<void>}
  */
 export async function saveState(state) {
-  // Yield to the event loop so the call is truly async, matching the
-  // behaviour of a network request and ensuring React sees separate renders.
-  await new Promise((resolve) => setTimeout(resolve, 0));
-
   try {
     const dataToStore = {
       version: CURRENT_VERSION,
@@ -45,10 +40,6 @@ export async function saveState(state) {
  * @returns {Promise<Object|null>} The loaded state or null if no valid data exists
  */
 export async function loadState() {
-  // Yield to the event loop so the call is truly async, matching the
-  // behaviour of a network request and ensuring React sees separate renders.
-  await new Promise((resolve) => setTimeout(resolve, 0));
-
   try {
     const storedData = localStorage.getItem(STORAGE_KEY);
 
