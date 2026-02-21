@@ -74,9 +74,10 @@ export function usePersistence(state, dispatch) {
     try {
       const createdTask = await client.createTask(task);
       
-      // Update temp ID with server/storage ID
+      // Update temp ID with server/storage ID — use RECONCILE_TASK so this
+      // persistence bookkeeping does NOT touch updatedAt / re-trigger highlight.
       taskDispatch({ 
-        type: 'UPDATE_TASK', 
+        type: 'RECONCILE_TASK', 
         payload: { 
           taskId: task.id, 
           updates: { 
@@ -86,7 +87,7 @@ export function usePersistence(state, dispatch) {
         }
       });
       
-      return { success: true };
+      return { success: true, task: createdTask };
     } catch (error) {
       console.error('Failed to create task:', error);
       
@@ -111,9 +112,10 @@ export function usePersistence(state, dispatch) {
     } catch (error) {
       console.error('Failed to update task:', error);
       
-      // Rollback: restore previous values
+      // Rollback: restore previous values — use RECONCILE_TASK so rollback
+      // does NOT touch updatedAt / re-trigger highlight.
       taskDispatch({ 
-        type: 'UPDATE_TASK', 
+        type: 'RECONCILE_TASK', 
         payload: { 
           taskId, 
           updates: previousTask 
@@ -156,9 +158,10 @@ export function usePersistence(state, dispatch) {
     } catch (error) {
       console.error('Failed to toggle task completion:', error);
       
-      // Rollback: restore previous state
+      // Rollback: restore previous state — use RECONCILE_TASK so rollback
+      // does NOT touch updatedAt / re-trigger highlight.
       taskDispatch({ 
-        type: 'UPDATE_TASK', 
+        type: 'RECONCILE_TASK', 
         payload: { 
           taskId, 
           updates: previousState 
@@ -185,10 +188,11 @@ export function usePersistence(state, dispatch) {
     } catch (error) {
       console.error('Failed to bulk update tasks:', error);
       
-      // Rollback: restore all previous states
+      // Rollback: restore all previous states — use RECONCILE_TASK so rollback
+      // does NOT touch updatedAt / re-trigger highlight.
       taskUpdates.forEach(({ taskId, previousTask }) => {
         taskDispatch({ 
-          type: 'UPDATE_TASK', 
+          type: 'RECONCILE_TASK', 
           payload: { 
             taskId, 
             updates: previousTask 

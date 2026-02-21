@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useBlocker } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Navigation from '../../../components/Navigation';
 import { DocumentsProvider, useDocumentsContext } from '../context/DocumentsContext';
@@ -11,7 +12,24 @@ import DocumentEditor from './DocumentEditor';
  * Responsive: Mobile shows one panel at a time, tablet/desktop shows both
  */
 function DocumentsContent() {
-  const { isLoading } = useDocumentsContext();
+  const { isLoading, checkUnsavedChanges } = useDocumentsContext();
+
+  // Block SPA navigation when there are unsaved changes
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+    return checkUnsavedChanges() && currentLocation.pathname !== nextLocation.pathname;
+  });
+
+  // Show standard browser confirm dialog when navigation is blocked
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      if (confirmed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">

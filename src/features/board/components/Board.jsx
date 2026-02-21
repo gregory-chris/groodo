@@ -15,14 +15,14 @@ import Navigation from '../../../components/Navigation';
  */
 function BoardContent() {
   const { state, isLoading } = useBoardContext();
-  
+
   // Get week dates from the current week in state
   const weekDates = state.currentWeek ? getWeekDates(state.currentWeek.start) : [];
 
   return (
-    <div style={{ 
-      height: '100vh', 
-      display: 'flex', 
+    <div style={{
+      height: '100vh',
+      display: 'flex',
       flexDirection: 'column',
       backgroundColor: 'white'
     }}>
@@ -44,14 +44,14 @@ function BoardContent() {
       {/* Main Content - Task Board */}
       <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-y-auto sm:overflow-hidden flex flex-col md:px-4 sm:px-3">
         <h2 className="sr-only">Task Board</h2>
-        
+
         {/* Task Columns */}
-        <div className="grid grid-cols-1 gap-4 w-full justify-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:flex-1 sm:overflow-hidden sm:min-h-0">
+        <div className="grid grid-cols-1 gap-4 w-full justify-center sm:grid-cols-2 md:grid-cols-3 min-[1200px]:grid-cols-5 sm:flex-1 sm:overflow-hidden sm:min-h-0">
           {weekDates
             .filter(date => date instanceof Date && !isNaN(date.getTime()))
             .map((date, index) => (
-              <Column 
-                key={`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${index}`} 
+              <Column
+                key={`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${index}`}
                 date={date}
               />
             ))}
@@ -59,8 +59,8 @@ function BoardContent() {
 
         {/* Empty state when no dates */}
         {weekDates.length === 0 && (
-          <div style={{ 
-            textAlign: 'center', 
+          <div style={{
+            textAlign: 'center',
             padding: '3rem 0',
             color: '#cbd5e1',
             fontSize: '0.875rem'

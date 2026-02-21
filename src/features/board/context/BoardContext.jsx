@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import { getCurrentWeek, getNextWeek, getPreviousWeek } from '../../../lib/date.js';
+import { getCurrentWeek, getNextWeek, getPreviousWeek, getDateKey } from '../../../lib/date.js';
 import { usePersistence } from '../hooks/usePersistence.js';
 import TaskModal from '../components/TaskModal';
 
@@ -9,6 +9,7 @@ const ACTIONS = {
   LOAD_STATE: 'LOAD_STATE',
   ADD_TASK: 'ADD_TASK',
   UPDATE_TASK: 'UPDATE_TASK',
+  RECONCILE_TASK: 'RECONCILE_TASK',
   DELETE_TASK: 'DELETE_TASK',
   MOVE_TASK: 'MOVE_TASK',
   TOGGLE_TASK_COMPLETE: 'TOGGLE_TASK_COMPLETE',
@@ -37,15 +38,20 @@ function boardReducer(state, action) {
       };
 
     case ACTIONS.ADD_TASK: {
+      const now = Date.now();
+      const taskId = action.payload.id || `task-${now}-${Math.random().toString(36).substr(2, 9)}`;
       const newTask = {
-        id: action.payload.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: taskId,
         title: action.payload.title || '',
         content: action.payload.content || '',
         column: action.payload.column || 'general',
         completed: false,
-        createdAt: Date.now(),
+        createdAt: now,
+        updatedAt: now,
         order: action.payload.order ?? state.tasks.filter(t => t.column === action.payload.column).length,
-        ...action.payload
+        ...action.payload,
+        // Stable key for React — survives ID swaps from persistence reconciliation
+        _stableKey: taskId,
       };
 
       return {
@@ -55,6 +61,21 @@ function boardReducer(state, action) {
     }
 
     case ACTIONS.UPDATE_TASK: {
+      const { taskId, updates } = action.payload;
+      const now = Date.now();
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === taskId
+            ? { ...task, ...updates, updatedAt: now }
+            : task
+        )
+      };
+    }
+
+    case ACTIONS.RECONCILE_TASK: {
+      // Silent update for persistence bookkeeping (e.g. temp-id → server-id).
+      // Does NOT touch updatedAt so it never re-triggers the highlight animation.
       const { taskId, updates } = action.payload;
       return {
         ...state,
@@ -88,17 +109,17 @@ function boardReducer(state, action) {
         const otherTasksInColumn = state.tasks.filter(
           task => task.column === targetTask.column && task.id !== taskId
         );
-        
+
         // Get the highest order in the column
         const maxOrder = Math.max(...otherTasksInColumn.map(task => task.order || 0), -1);
-        
+
         // Update the target task with new order (last position)
         updatedTask.order = maxOrder + 1;
       }
 
       return {
         ...state,
-        tasks: state.tasks.map(task => 
+        tasks: state.tasks.map(task =>
           task.id === taskId ? updatedTask : task
         )
       };
@@ -106,36 +127,42 @@ function boardReducer(state, action) {
 
     case ACTIONS.MOVE_TASK: {
       const { taskId, targetColumn, targetOrder } = action.payload;
-      
+
       // Get the task being moved
       const movingTask = state.tasks.find(task => task.id === taskId);
       if (!movingTask) {
         return state;
       }
-      
+
       // Get all tasks in the target column (excluding the moving task)
       const targetColumnTasks = state.tasks.filter(
         task => task.column === targetColumn && task.id !== taskId
       );
-      
+
       // Sort target column tasks by order
       targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
-      
+
       // Insert the moving task at the target position
-      targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
-      
+      const now = Date.now();
+      targetColumnTasks.splice(targetOrder, 0, {
+        ...movingTask,
+        column: targetColumn,
+        updatedAt: now
+      });
+
       // Reassign order values to all tasks in the target column
       const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
         ...task,
         order: index
       }));
-      
+
       // Create the final updated tasks array
       const updatedTasks = state.tasks.map(task => {
         if (task.id === taskId) {
           // This is the moving task - find it in the reordered array
+          // It should already have the new updatedAt from the splice above if we preserve it
           const reorderedTask = reorderedTargetTasks.find(t => t.id === task.id);
-          return reorderedTask || { ...task, column: targetColumn, order: targetOrder };
+          return reorderedTask || { ...task, column: targetColumn, order: targetOrder, updatedAt: now };
         } else if (task.column === targetColumn) {
           // Other tasks in the target column - find them in the reordered array
           const reorderedTask = reorderedTargetTasks.find(t => t.id === task.id);
@@ -143,7 +170,7 @@ function boardReducer(state, action) {
         }
         return task;
       });
-      
+
       return {
         ...state,
         tasks: updatedTasks
@@ -213,39 +240,41 @@ export function BoardProvider({ children }) {
 
   // Action creators with immediate persistence
   const addTask = useCallback((titleOrData, column, content = '') => {
-    const taskData = typeof titleOrData === 'string' 
+    const taskData = typeof titleOrData === 'string'
       ? { title: titleOrData, column, content }
       : titleOrData;
-    
+
     // Generate temp ID
     const tempId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newTask = { 
-      ...taskData, 
+    const newTask = {
+      ...taskData,
       id: tempId,
       completed: false,
       createdAt: Date.now(),
     };
-    
+
     // Optimistic update
     dispatch({
       type: ACTIONS.ADD_TASK,
       payload: newTask
     });
-    
+
     // Async sync (fire and forget, rollback handled inside)
     persistence.handleCreateTask(newTask, dispatch);
+
+    return newTask;
   }, [persistence]);
 
   const updateTask = useCallback((taskId, updates) => {
     // Store previous values for rollback
     const previousTask = state.tasks.find(t => t.id === taskId);
-    
+
     // Optimistic update
     dispatch({
       type: ACTIONS.UPDATE_TASK,
       payload: { taskId, updates }
     });
-    
+
     // Async sync with rollback
     if (previousTask) {
       persistence.handleUpdateTask(taskId, updates, previousTask, dispatch);
@@ -255,13 +284,13 @@ export function BoardProvider({ children }) {
   const deleteTask = useCallback((taskId) => {
     // Store task for potential rollback
     const taskToDelete = state.tasks.find(t => t.id === taskId);
-    
+
     // Optimistic delete
     dispatch({
       type: ACTIONS.DELETE_TASK,
       payload: { taskId }
     });
-    
+
     // Async sync with rollback
     if (taskToDelete) {
       persistence.handleDeleteTask(taskId, taskToDelete, dispatch);
@@ -271,18 +300,51 @@ export function BoardProvider({ children }) {
   const toggleTaskComplete = useCallback((taskId) => {
     // Store previous state for rollback
     const previousTask = state.tasks.find(t => t.id === taskId);
-    
+
     // Optimistic toggle
     dispatch({
       type: ACTIONS.TOGGLE_TASK_COMPLETE,
       payload: { taskId }
     });
-    
+
     // Async sync with rollback
     if (previousTask) {
       persistence.handleToggleComplete(taskId, previousTask, dispatch);
     }
   }, [persistence, state.tasks]);
+
+  const duplicateTask = useCallback(async (task, isCurrentWeek) => {
+    // If viewing the current week, put duplicate on today; otherwise same column
+    const targetColumn = isCurrentWeek ? getDateKey(new Date()) : task.column;
+
+    // Generate temp ID and create task data
+    const tempId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newTask = {
+      title: task.title,
+      content: task.content || '',
+      column: targetColumn,
+      id: tempId,
+      completed: false,
+      createdAt: Date.now(),
+    };
+
+    // Optimistic update - task appears in the UI immediately
+    dispatch({
+      type: ACTIONS.ADD_TASK,
+      payload: newTask
+    });
+
+    // Wait for persistence to complete and get the real ID
+    const result = await persistence.handleCreateTask(newTask, dispatch);
+
+    if (result.success && result.task) {
+      // Return the task with the real persisted ID so the modal targets the correct task
+      return { ...newTask, id: result.task.id };
+    }
+
+    // If persistence failed, the task was rolled back by handleCreateTask
+    return null;
+  }, [persistence, dispatch]);
 
   const moveTask = useCallback((taskId, targetColumn, targetOrder) => {
     // Helper function to calculate affected tasks from current state
@@ -291,60 +353,61 @@ export function BoardProvider({ children }) {
       // Get the task being moved
       const movingTask = currentTasks.find(t => t.id === taskId);
       if (!movingTask) return null;
-      
+
       // Simulate the move to calculate which tasks will be affected
       // This mirrors the logic from the MOVE_TASK reducer
       const targetColumnTasks = currentTasks.filter(
         task => task.column === targetColumn && task.id !== taskId
       );
-      
+
       // Sort target column tasks by order
       targetColumnTasks.sort((a, b) => (a.order || 0) - (b.order || 0));
-      
+
       // Insert the moving task at the target position
       targetColumnTasks.splice(targetOrder, 0, { ...movingTask, column: targetColumn });
-      
+
       // Reassign order values to all tasks in the target column
       const reorderedTargetTasks = targetColumnTasks.map((task, index) => ({
         ...task,
         order: index
       }));
-      
+
       // Identify which tasks have changed and need to be synced
       const affectedTasks = [];
-      
+
       reorderedTargetTasks.forEach(newTask => {
         const originalTask = currentTasks.find(t => t.id === newTask.id);
         if (originalTask) {
           const orderChanged = originalTask.order !== newTask.order;
           const columnChanged = originalTask.column !== newTask.column;
-          
+
           if (orderChanged || columnChanged) {
             affectedTasks.push({
               taskId: newTask.id,
               updates: {
                 column: newTask.column,
-                order: newTask.order
+                order: newTask.order,
+                ...(newTask.id === taskId ? { updatedAt: Date.now() } : {})
               },
               previousTask: { ...originalTask }
             });
           }
         }
       });
-      
+
       return affectedTasks;
     };
 
     // Calculate affected tasks using current state at call time
     const affectedTasks = calculateAffectedTasks(state.tasks);
     if (!affectedTasks) return;
-    
+
     // Optimistic move
     dispatch({
       type: ACTIONS.MOVE_TASK,
       payload: { taskId, targetColumn, targetOrder }
     });
-    
+
     // Send bulk updates for all affected tasks
     if (affectedTasks.length > 0) {
       persistence.handleBulkUpdateTasks(affectedTasks, dispatch);
@@ -384,6 +447,7 @@ export function BoardProvider({ children }) {
       updateTask,
       deleteTask,
       toggleTaskComplete,
+      duplicateTask,
       moveTask,
       setCurrentWeek,
       goToNextWeek,
@@ -395,6 +459,7 @@ export function BoardProvider({ children }) {
     updateTask,
     deleteTask,
     toggleTaskComplete,
+    duplicateTask,
     moveTask,
     setCurrentWeek,
     goToNextWeek,
@@ -465,11 +530,11 @@ BoardProvider.propTypes = {
 // eslint-disable-next-line react-refresh/only-export-components
 export function useBoardContext() {
   const context = useContext(BoardContext);
-  
+
   if (!context) {
     throw new Error('useBoardContext must be used within a BoardProvider');
   }
-  
+
   return context;
 }
 
@@ -500,7 +565,7 @@ export const boardHelpers = {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
     const pending = total - completed;
-    
+
     return {
       total,
       completed,
