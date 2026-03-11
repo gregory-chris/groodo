@@ -68,34 +68,50 @@ export function usePersistence(state, dispatch) {
   }, [client, dispatch]);
 
   /**
-   * Handle creating a task with optimistic update and rollback on failure
+   * Handle creating a task in storage, optionally with optimistic UI updates.
    */
-  const handleCreateTask = useCallback(async (task, taskDispatch) => {
+  const handleCreateTask = useCallback(async (task, taskDispatch, options = {}) => {
+    const { optimistic = true } = options;
+
     try {
       const createdTask = await client.createTask(task);
-      
-      // Update temp ID with server/storage ID — use RECONCILE_TASK so this
-      // persistence bookkeeping does NOT touch updatedAt / re-trigger highlight.
-      taskDispatch({ 
-        type: 'RECONCILE_TASK', 
-        payload: { 
-          taskId: task.id, 
-          updates: { 
-            id: createdTask.id,
-            createdAt: createdTask.createdAt || Date.now()
-          } 
-        }
-      });
+
+      if (optimistic) {
+        // Update temp ID with server/storage ID — use RECONCILE_TASK so this
+        // persistence bookkeeping does NOT touch updatedAt / re-trigger highlight.
+        taskDispatch({ 
+          type: 'RECONCILE_TASK', 
+          payload: { 
+            taskId: task.id, 
+            updates: { 
+              id: createdTask.id,
+              createdAt: createdTask.createdAt || Date.now()
+            } 
+          }
+        });
+      } else {
+        taskDispatch({
+          type: 'ADD_TASK',
+          payload: {
+            ...task,
+            ...createdTask,
+            id: createdTask.id || task.id,
+            createdAt: createdTask.createdAt || task.createdAt || Date.now()
+          }
+        });
+      }
       
       return { success: true, task: createdTask };
     } catch (error) {
       console.error('Failed to create task:', error);
-      
-      // Rollback: remove the task
-      taskDispatch({ 
-        type: 'DELETE_TASK', 
-        payload: { taskId: task.id }
-      });
+
+      if (optimistic) {
+        // Rollback: remove the task
+        taskDispatch({ 
+          type: 'DELETE_TASK', 
+          payload: { taskId: task.id }
+        });
+      }
       
       toast.error('Failed to create task: ' + (error.message || 'Unknown error'));
       return { success: false, error };

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useBoardContext } from '../context/BoardContext';
-import { isToday, getDayName, formatDate, getDateKey, getCurrentWeek } from '../../../lib/date.js';
+import { isToday, getDayName, getDateKey, getCurrentWeek } from '../../../lib/date.js';
 import TaskCard from './TaskCard';
 
 /**
@@ -13,6 +13,7 @@ import TaskCard from './TaskCard';
 function Column({ date, className = '', ...props }) {
   const { state, addTask, deleteTask, toggleTaskComplete, duplicateTask, moveTask, openTaskModal } = useBoardContext();
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   // Get day name for drop zone ID - must be before any conditional returns
   const columnKey = date instanceof Date && !isNaN(date.getTime()) ? getDateKey(date) : 'invalid';
@@ -60,15 +61,24 @@ function Column({ date, className = '', ...props }) {
   const taskIds = tasks.map(task => task.id);
 
   // Handle adding new task via input
-  const handleAddTask = (e) => {
-    if (e.key === 'Enter' && newTaskTitle.trim()) {
-      addTask({
-        title: newTaskTitle.trim(),
-        column: columnKey,
-        description: '',
-        order: tasks.length
-      });
-      setNewTaskTitle('');
+  const handleAddTask = async (e) => {
+    if (e.key === 'Enter' && newTaskTitle.trim() && !isAddingTask) {
+      setIsAddingTask(true);
+
+      try {
+        const createdTask = await addTask({
+          title: newTaskTitle.trim(),
+          column: columnKey,
+          content: '',
+          order: tasks.length
+        });
+
+        if (createdTask) {
+          setNewTaskTitle('');
+        }
+      } finally {
+        setIsAddingTask(false);
+      }
     }
   };
 
@@ -151,6 +161,7 @@ function Column({ date, className = '', ...props }) {
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
           onKeyDown={handleAddTask}
+          disabled={isAddingTask}
           className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors duration-200"
           data-testid="add-task-input"
         />

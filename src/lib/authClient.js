@@ -77,6 +77,10 @@ export async function signOut() {
   deleteCookie(TOKEN_COOKIE_NAME);
 }
 
+export function clearToken() {
+  deleteCookie(TOKEN_COOKIE_NAME);
+}
+
 export async function getMe() {
   const data = await request('/api/users/profile', { method: 'GET' });
   // Sliding expiration on activity
@@ -88,6 +92,12 @@ export async function getMe() {
 
 export function getToken() {
   return getCookie(TOKEN_COOKIE_NAME);
+}
+
+export async function keepAlive() {
+  const data = await request('/api/users/keep-alive', { method: 'GET' });
+  touchCookie(TOKEN_COOKIE_NAME, SLIDING_SECONDS);
+  return data?.data || data;
 }
 
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { X } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import WysiwygEditor from '../../projects/components/WysiwygEditor';
@@ -19,6 +20,7 @@ function TaskModal({
   const { state, moveTask } = useBoardContext();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Initialize form with task data
   useEffect(() => {
@@ -30,12 +32,14 @@ function TaskModal({
         setTitle('');
         setDescription('');
       }
+
+      setIsSaving(false);
     }
   }, [isOpen, task, mode]);
 
   // Handle save
-  const handleSave = () => {
-    if (!title.trim()) {
+  const handleSave = async () => {
+    if (!title.trim() || isSaving) {
       return; // Don't save if title is empty
     }
 
@@ -44,13 +48,17 @@ function TaskModal({
       content: DOMPurify.sanitize(description || '')
     };
 
-    if (mode === 'edit' && task) {
-      onSave(task.id, taskData);
-    } else {
-      onSave(taskData);
-    }
+    setIsSaving(true);
 
-    onClose();
+    try {
+      if (mode === 'edit' && task) {
+        await onSave(task.id, taskData);
+      } else {
+        await onSave(taskData);
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Handle cancel
@@ -179,14 +187,14 @@ function TaskModal({
             </button>
             <button
               onClick={handleSave}
-              disabled={!title.trim()}
+              disabled={!title.trim() || isSaving}
               className={`px-6 py-2.5 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors duration-200 ${
-                title.trim()
+                title.trim() && !isSaving
                   ? 'bg-gradient-to-br from-primary to-accent hover:shadow-lg hover:-translate-y-0.5'
                   : 'bg-gray-300 cursor-not-allowed'
               }`}
             >
-              {mode === 'edit' ? 'Update' : 'Create'}
+              {isSaving ? 'Saving...' : mode === 'edit' ? 'Update' : 'Create'}
             </button>
           </div>
         </div>
@@ -194,5 +202,17 @@ function TaskModal({
     </div>
   );
 }
+
+TaskModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  task: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    content: PropTypes.string,
+  }),
+  mode: PropTypes.oneOf(['edit', 'create'])
+};
 
 export default TaskModal;

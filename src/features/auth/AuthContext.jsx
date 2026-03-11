@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer, useCallback, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { getMe, signIn, signUp, signOut, getToken } from '../../lib/authClient.js';
+import { clearToken, getMe, keepAlive, signIn, signUp, signOut, getToken } from '../../lib/authClient.js';
 import { getCookie, setCookie } from '../../lib/cookies.js';
 
 const AuthContext = createContext(null);
@@ -82,6 +82,32 @@ export function AuthProvider({ children }) {
     setModalState(s => ({ ...s, open: false, info: undefined }));
   }, []);
 
+  const handleExpiredAuth = useCallback(() => {
+    clearToken();
+    dispatch({ type: 'LOAD_GUEST' });
+    openAuthModal('sign-in');
+  }, [openAuthModal]);
+
+  const validateSession = useCallback(async () => {
+    const token = getToken();
+
+    if (!token) {
+      return { ok: false, reason: 'missing-token' };
+    }
+
+    try {
+      await keepAlive();
+      return { ok: true };
+    } catch (err) {
+      if (err?.status === 401 || err?.status === 403) {
+        handleExpiredAuth();
+        return { ok: false, reason: 'expired' };
+      }
+
+      return { ok: false, reason: 'request-failed', error: err };
+    }
+  }, [handleExpiredAuth]);
+
   const loadUser = useCallback(async () => {
     dispatch({ type: 'LOAD_START' });
     try {
@@ -115,6 +141,31 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const checkSessionOnFocus = () => {
+      void validateSession();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkSessionOnFocus();
+      }
+    };
+
+    checkSessionOnFocus();
+    window.addEventListener('focus', checkSessionOnFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', checkSessionOnFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [validateSession]);
+
   // Show sign-in modal automatically in guest mode if needed (on initial load)
   useEffect(() => {
     if (state.status === 'guest' && !modalState.open) {
@@ -122,7 +173,7 @@ export function AuthProvider({ children }) {
         openAuthModal('sign-in');
       }
     }
-  }, [state.status, openAuthModal]);
+  }, [state.status, modalState.open, openAuthModal]);
 
   // Periodic check for login modal appearance (every 2 minutes)
   useEffect(() => {
@@ -223,6 +274,7 @@ AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');

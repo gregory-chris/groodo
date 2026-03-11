@@ -238,31 +238,27 @@ export function BoardProvider({ children }) {
     }
   }, [state.currentWeek, persistence.isLoading]);
 
-  // Action creators with immediate persistence
-  const addTask = useCallback((titleOrData, column, content = '') => {
+  // Action creators with persistence
+  const addTask = useCallback(async (titleOrData, column, content = '') => {
     const taskData = typeof titleOrData === 'string'
       ? { title: titleOrData, column, content }
       : titleOrData;
 
-    // Generate temp ID
-    const tempId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newTask = {
       ...taskData,
-      id: tempId,
       completed: false,
       createdAt: Date.now(),
     };
 
-    // Optimistic update
-    dispatch({
-      type: ACTIONS.ADD_TASK,
-      payload: newTask
+    const result = await persistence.handleCreateTask(newTask, dispatch, {
+      optimistic: false
     });
 
-    // Async sync (fire and forget, rollback handled inside)
-    persistence.handleCreateTask(newTask, dispatch);
+    if (result.success && result.task) {
+      return result.task;
+    }
 
-    return newTask;
+    return null;
   }, [persistence]);
 
   const updateTask = useCallback((taskId, updates) => {
@@ -497,15 +493,22 @@ export function BoardProvider({ children }) {
     });
   }, []);
 
-  const handleModalSave = useCallback((taskIdOrData, updates) => {
+  const handleModalSave = useCallback(async (taskIdOrData, updates) => {
     if (modalState.mode === 'edit') {
       // Edit existing task
       updateTask(taskIdOrData, updates);
+      handleModalClose();
+      return { success: true };
     } else {
       // Create new task
-      addTask(taskIdOrData.title, modalState.column, taskIdOrData.content);
+      const createdTask = await addTask(taskIdOrData.title, modalState.column, taskIdOrData.content);
+      if (createdTask) {
+        handleModalClose();
+        return { success: true, task: createdTask };
+      }
+
+      return { success: false };
     }
-    handleModalClose();
   }, [modalState.mode, modalState.column, updateTask, addTask, handleModalClose]);
 
   return (
