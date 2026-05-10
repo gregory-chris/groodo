@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import { getCurrentWeek, getNextWeek, getPreviousWeek, getDateKey } from '../../../lib/date.js';
+import { getCurrentWeek, getNextWeek, getPreviousWeek, getDateKey, getWeekDateKeys } from '../../../lib/date.js';
 import { usePersistence } from '../hooks/usePersistence.js';
 import TaskModal from '../components/TaskModal';
 
@@ -27,15 +27,32 @@ const initialState = {
   error: null
 };
 
+function filterTasksForWeek(tasks, week) {
+  if (!week?.start) {
+    return tasks;
+  }
+
+  const weekDateKeys = new Set(getWeekDateKeys(week));
+  return tasks.filter((task) => weekDateKeys.has(task.column));
+}
+
 // Reducer function
 function boardReducer(state, action) {
   switch (action.type) {
-    case ACTIONS.LOAD_STATE:
+    case ACTIONS.LOAD_STATE: {
+      const nextWeek = action.payload.currentWeek || state.currentWeek;
+      const nextTasks = action.payload.tasks !== undefined
+        ? filterTasksForWeek(action.payload.tasks, nextWeek)
+        : state.tasks;
+
       return {
         ...state,
         ...action.payload,
+        currentWeek: nextWeek,
+        tasks: nextTasks,
         loading: false
       };
+    }
 
     case ACTIONS.ADD_TASK: {
       const now = Date.now();
@@ -56,7 +73,7 @@ function boardReducer(state, action) {
 
       return {
         ...state,
-        tasks: [...state.tasks, newTask]
+        tasks: filterTasksForWeek([...state.tasks, newTask], state.currentWeek)
       };
     }
 
@@ -65,11 +82,11 @@ function boardReducer(state, action) {
       const now = Date.now();
       return {
         ...state,
-        tasks: state.tasks.map(task =>
+        tasks: filterTasksForWeek(state.tasks.map(task =>
           task.id === taskId
             ? { ...task, ...updates, updatedAt: now }
             : task
-        )
+        ), state.currentWeek)
       };
     }
 
@@ -79,11 +96,11 @@ function boardReducer(state, action) {
       const { taskId, updates } = action.payload;
       return {
         ...state,
-        tasks: state.tasks.map(task =>
+        tasks: filterTasksForWeek(state.tasks.map(task =>
           task.id === taskId
             ? { ...task, ...updates }
             : task
-        )
+        ), state.currentWeek)
       };
     }
 
@@ -173,21 +190,23 @@ function boardReducer(state, action) {
 
       return {
         ...state,
-        tasks: updatedTasks
+        tasks: filterTasksForWeek(updatedTasks, state.currentWeek)
       };
     }
 
     case ACTIONS.SET_CURRENT_WEEK:
       return {
         ...state,
-        currentWeek: action.payload
+        currentWeek: action.payload,
+        loading: true
       };
 
     case ACTIONS.GO_TO_NEXT_WEEK: {
       const nextWeek = getNextWeek(state.currentWeek);
       return {
         ...state,
-        currentWeek: nextWeek
+        currentWeek: nextWeek,
+        loading: true
       };
     }
 
@@ -195,7 +214,8 @@ function boardReducer(state, action) {
       const previousWeek = getPreviousWeek(state.currentWeek);
       return {
         ...state,
-        currentWeek: previousWeek
+        currentWeek: previousWeek,
+        loading: true
       };
     }
 
@@ -203,7 +223,8 @@ function boardReducer(state, action) {
       const currentWeek = getCurrentWeek();
       return {
         ...state,
-        currentWeek: currentWeek
+        currentWeek: currentWeek,
+        loading: true
       };
     }
 
@@ -237,6 +258,14 @@ export function BoardProvider({ children }) {
       });
     }
   }, [state.currentWeek, persistence.isLoading]);
+
+  useEffect(() => {
+    if (!state.currentWeek) {
+      return;
+    }
+
+    void persistence.loadWeekTasks(state.currentWeek);
+  }, [persistence.loadWeekTasks, state.currentWeek]);
 
   // Action creators with persistence
   const addTask = useCallback(async (titleOrData, column, content = '') => {
@@ -435,6 +464,8 @@ export function BoardProvider({ children }) {
     });
   }, []);
 
+  const isReadonly = state.loading || persistence.isLoading || persistence.isWeekLoading;
+
   // Context value
   const contextValue = {
     state,
@@ -461,6 +492,9 @@ export function BoardProvider({ children }) {
     goToNextWeek,
     goToPreviousWeek,
     goToCurrentWeek,
+    isLoading: persistence.isLoading,
+    isWeekLoading: persistence.isWeekLoading,
+    isReadonly,
     // Mock function for openTaskModal
     openTaskModal: (mode, taskData) => {
       setModalState({
@@ -473,10 +507,12 @@ export function BoardProvider({ children }) {
     // Persistence functionality
     persistence: {
       isLoading: persistence.isLoading,
+      isWeekLoading: persistence.isWeekLoading,
       isSaving: persistence.isSaving,
       error: persistence.error,
       saveData: persistence.saveData,
       loadData: persistence.loadData,
+      loadWeekTasks: persistence.loadWeekTasks,
       clearError: persistence.clearError,
       exportData: persistence.exportData,
       importData: persistence.importData,

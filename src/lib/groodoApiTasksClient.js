@@ -32,13 +32,17 @@ async function request(path, options = {}) {
   return body;
 }
 
-export async function listTasks() {
-  const response = await request('/api/tasks', { method: 'GET' });
-  console.log('🔍 Raw API response:', response);
+export async function listTasks(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.startDate) params.set('startDate', filters.startDate);
+  if (filters.endDate) params.set('endDate', filters.endDate);
+
+  const path = params.size > 0 ? `/api/tasks?${params.toString()}` : '/api/tasks';
+  const response = await request(path, { method: 'GET' });
   // Handle nested response structure: {result: "success", data: [...]}
   const data = response?.data || response;
   const tasks = Array.isArray(data) ? data : (data?.items || []);
-  console.log('📋 Extracted tasks:', tasks);
   return tasks;
 }
 

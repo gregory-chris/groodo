@@ -141,6 +141,33 @@ export function getWeekDates(startDate) {
   return dates;
 }
 
+  /**
+   * Get date keys for every work day in a week
+   * @param {Object} week - Week bounds {start, end}
+   * @returns {string[]} Date keys for Sunday through Thursday
+   */
+  export function getWeekDateKeys(week) {
+    if (!week?.start) {
+      return [];
+    }
+
+    return getWeekDates(week.start).map(getDateKey);
+  }
+
+  /**
+   * Check whether a YYYY-MM-DD date key belongs to the supplied week
+   * @param {string} dateKey - Date key in YYYY-MM-DD format
+   * @param {Object} week - Week bounds {start, end}
+   * @returns {boolean} True if the date key falls within the week
+   */
+  export function isDateKeyInWeek(dateKey, week) {
+    if (!dateKey) {
+      return false;
+    }
+
+    return getWeekDateKeys(week).includes(dateKey);
+  }
+
 /**
  * Format a date for display
  * @param {Date} date - The date to format

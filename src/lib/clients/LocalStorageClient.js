@@ -1,5 +1,6 @@
 import { TaskStorageClient } from '../taskStorageClient.js';
 import { saveState, loadState } from '../storage.js';
+import { isDateKeyInWeek } from '../date.js';
 
 /**
  * LocalStorageClient - Implements task storage using browser localStorage
@@ -7,13 +8,20 @@ import { saveState, loadState } from '../storage.js';
  */
 export class LocalStorageClient extends TaskStorageClient {
   /**
-   * List all tasks from localStorage
+   * List tasks from localStorage, optionally filtered to a specific week
+   * @param {Object} [options] - Storage query options
    * @returns {Promise<Array>} Array of task objects
    */
-  async listTasks() {
+  async listTasks(options = {}) {
     try {
       const state = await loadState();
-      return state?.tasks || [];
+      const tasks = state?.tasks || [];
+
+      if (!options.week) {
+        return tasks;
+      }
+
+      return tasks.filter((task) => isDateKeyInWeek(task.column, options.week));
     } catch (error) {
       console.error('Failed to load tasks from localStorage:', error);
       return [];

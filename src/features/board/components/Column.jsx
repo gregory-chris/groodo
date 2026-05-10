@@ -11,7 +11,7 @@ import TaskCard from './TaskCard';
  * Features drag and drop functionality and task management
  */
 function Column({ date, className = '', ...props }) {
-  const { state, addTask, deleteTask, toggleTaskComplete, duplicateTask, moveTask, openTaskModal } = useBoardContext();
+  const { state, addTask, deleteTask, toggleTaskComplete, duplicateTask, moveTask, openTaskModal, isReadonly } = useBoardContext();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isAddingTask, setIsAddingTask] = useState(false);
 
@@ -161,7 +161,7 @@ function Column({ date, className = '', ...props }) {
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
           onKeyDown={handleAddTask}
-          disabled={isAddingTask}
+          disabled={isReadonly || isAddingTask}
           className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors duration-200"
           data-testid="add-task-input"
         />

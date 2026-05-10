@@ -4,10 +4,11 @@
  */
 export class TaskStorageClient {
   /**
-   * List all tasks from storage
+   * List tasks from storage, optionally filtered to a specific week
+   * @param {Object} [options] - Storage query options
    * @returns {Promise<Array>} Array of task objects
    */
-  async listTasks() {
+  async listTasks(options = {}) {
     throw new Error('listTasks() must be implemented by subclass');
   }
 

@@ -17,7 +17,7 @@ function TaskModal({
   task = null,
   mode = 'edit' // 'edit' or 'create'
 }) {
-  const { state, moveTask } = useBoardContext();
+  const { state, moveTask, isReadonly } = useBoardContext();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -39,7 +39,7 @@ function TaskModal({
 
   // Handle save
   const handleSave = async () => {
-    if (!title.trim() || isSaving) {
+    if (!title.trim() || isSaving || isReadonly) {
       return; // Don't save if title is empty
     }
 
@@ -68,7 +68,7 @@ function TaskModal({
 
   // Handle move to next week
   const handleMoveToNextWeek = () => {
-    if (!task || !state.currentWeek) {
+    if (!task || !state.currentWeek || isReadonly) {
       return;
     }
 
@@ -143,6 +143,7 @@ function TaskModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title..."
+              disabled={isReadonly}
               className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
               autoFocus
             />
@@ -161,6 +162,7 @@ function TaskModal({
               value={description}
               onChange={(content) => setDescription(content)}
               placeholder="Enter task description..."
+              disabled={isReadonly}
             />
           </div>
         </div>
@@ -171,6 +173,7 @@ function TaskModal({
             {mode === 'edit' && state.currentWeek && (
               <button
                 onClick={handleMoveToNextWeek}
+                disabled={isReadonly}
                 className="px-6 py-2.5 text-sm font-medium text-secondary bg-white border border-secondary/30 rounded-lg hover:bg-secondary/5 hover:border-secondary/50 focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-colors duration-200"
                 aria-label="Move task to next week"
               >
@@ -187,9 +190,9 @@ function TaskModal({
             </button>
             <button
               onClick={handleSave}
-              disabled={!title.trim() || isSaving}
+              disabled={!title.trim() || isSaving || isReadonly}
               className={`px-6 py-2.5 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors duration-200 ${
-                title.trim() && !isSaving
+                title.trim() && !isSaving && !isReadonly
                   ? 'bg-gradient-to-br from-primary to-accent hover:shadow-lg hover:-translate-y-0.5'
                   : 'bg-gray-300 cursor-not-allowed'
               }`}

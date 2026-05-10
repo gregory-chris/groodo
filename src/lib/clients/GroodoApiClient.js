@@ -1,6 +1,6 @@
 import { TaskStorageClient } from '../taskStorageClient.js';
 import * as groodoApi from '../groodoApiTasksClient.js';
-import { getDateKey } from '../date.js';
+import { getDateKey, isDateKeyInWeek } from '../date.js';
 
 /**
  * GroodoApiClient - Implements task storage using Groodo API server
@@ -8,15 +8,29 @@ import { getDateKey } from '../date.js';
  */
 export class GroodoApiClient extends TaskStorageClient {
   /**
-   * List all tasks from Groodo API
+   * List tasks from Groodo API, optionally filtered to a specific week
+   * @param {Object} [options] - Storage query options
    * @returns {Promise<Array>} Array of task objects
    */
-  async listTasks() {
+  async listTasks(options = {}) {
     try {
-      const tasks = await groodoApi.listTasks();
+      const filters = options.week
+        ? {
+            startDate: getDateKey(options.week.start),
+            endDate: getDateKey(options.week.end)
+          }
+        : undefined;
+
+      const tasks = await groodoApi.listTasks(filters);
+      const transformedTasks = tasks.map(task => this._transformFromApi(task));
       
-      // Transform API format to internal format
-      return tasks.map(task => this._transformFromApi(task));
+      if (!options.week) {
+        return transformedTasks;
+      }
+
+      // Keep a local fallback filter so the UI remains correct even if the
+      // backend ignores the supplied date-range query parameters.
+      return transformedTasks.filter((task) => isDateKeyInWeek(task.column, options.week));
     } catch (error) {
       console.error('Failed to load tasks from Groodo API:', error);
       throw new Error(error.message || 'Failed to load tasks from server');

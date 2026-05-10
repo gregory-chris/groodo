@@ -14,7 +14,7 @@ import Navigation from '../../../components/Navigation';
  * Main Board component that integrates all task management features
  */
 function BoardContent() {
-  const { state, isLoading } = useBoardContext();
+  const { state, isLoading, isWeekLoading, isReadonly } = useBoardContext();
 
   // Get week dates from the current week in state
   const weekDates = state.currentWeek ? getWeekDates(state.currentWeek.start) : [];
@@ -42,11 +42,17 @@ function BoardContent() {
       </div>
 
       {/* Main Content - Task Board */}
-      <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-y-auto sm:overflow-hidden flex flex-col md:px-4 sm:px-3">
+      <main id="main-content" className="w-full px-6 pb-8 flex-1 overflow-y-auto sm:overflow-hidden flex flex-col md:px-4 sm:px-3 relative" aria-busy={isReadonly}>
         <h2 className="sr-only">Task Board</h2>
 
+        {isWeekLoading && (
+          <div className="absolute right-6 top-0 z-10 rounded-full border border-secondary/20 bg-white/90 px-3 py-1 text-xs font-medium text-primary shadow-sm backdrop-blur-sm">
+            Loading tasks...
+          </div>
+        )}
+
         {/* Task Columns */}
-        <div className="grid grid-cols-1 gap-4 w-full justify-center sm:grid-cols-2 md:grid-cols-3 min-[1200px]:grid-cols-5 sm:flex-1 sm:overflow-hidden sm:min-h-0">
+        <div className={`grid grid-cols-1 gap-4 w-full justify-center sm:grid-cols-2 md:grid-cols-3 min-[1200px]:grid-cols-5 sm:flex-1 sm:overflow-hidden sm:min-h-0 transition-opacity duration-150 ${isReadonly ? 'pointer-events-none opacity-60' : ''}`}>
           {weekDates
             .filter(date => date instanceof Date && !isNaN(date.getTime()))
             .map((date, index) => (
